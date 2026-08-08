@@ -1,64 +1,107 @@
-# 📊 Enterprise Sales Analytics Dashboard
+<p align="center">
+<img src="assets/github_cover.png" width="100%">
+</p>
 
-### Professional Business Intelligence Solution
+<h1 align="center">📊 Enterprise Sales Analytics Dashboard</h1>
 
-Built with **Python**, **SQL Server**, **Streamlit**, **Plotly**, **Pandas**, and **SQLAlchemy**
+<p align="center">
+
+![Python](https://img.shields.io/badge/Python-3.13-blue?logo=python)
+![SQL Server](https://img.shields.io/badge/SQL%20Server-2022-red?logo=microsoftsqlserver)
+![Streamlit](https://img.shields.io/badge/Streamlit-Live-red?logo=streamlit)
+![Plotly](https://img.shields.io/badge/Plotly-Interactive-blue?logo=plotly)
+![Pandas](https://img.shields.io/badge/Pandas-Data%20Analysis-purple?logo=pandas)
+![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-ORM-orange)
+![Git](https://img.shields.io/badge/Git-Version%20Control-orange?logo=git)
+![GitHub](https://img.shields.io/badge/GitHub-Portfolio-black?logo=github)
+
+</p>
 
 ---
 
 # 🚀 Overview
 
-The Enterprise Sales Analytics Dashboard is a modern Business Intelligence application designed to transform raw sales data into actionable executive insights.
+The **Enterprise Sales Analytics Dashboard** is a professional Business Intelligence solution built with **Python**, **SQL Server**, **Streamlit**, **Pandas**, **SQLAlchemy**, and **Plotly**.
 
-The solution combines SQL Server, Python, and Streamlit to provide real-time KPI monitoring, interactive dashboards, and data-driven decision support.
+It transforms raw transactional sales data into meaningful executive insights through interactive dashboards, SQL analytics, and modern data visualization.
+
+This project demonstrates enterprise-level skills in:
+
+- Business Intelligence
+- Data Analytics
+- SQL Server Development
+- Python Programming
+- Dashboard Design
+- Data Visualization
+- Executive Reporting
 
 ---
 
 # 🎯 Business Objectives
 
-This project helps management answer questions such as:
+This dashboard enables executives and business managers to answer key questions such as:
 
-- What is our total revenue?
+- How much revenue has the business generated?
 - Which regions perform best?
-- Which products generate the highest profit?
-- Which customer segments drive revenue?
-- What are the monthly revenue trends?
+- Which customer segments generate the highest profit?
+- Which products should receive more investment?
+- Which months generate the highest revenue?
 - What is the average order value?
-- Which sales channels perform best?
+- Which sales channels drive business growth?
 
 ---
 
 # 📸 Dashboard Preview
 
-> Dashboard screenshots will be added as development progresses.
-
 ## Executive Dashboard
 
-![Executive Dashboard](assets/dashboard_home.png)
+> *(Dashboard screenshot to be added)*
+
+![Dashboard](assets/dashboard_home.png)
 
 ---
 
-# ✨ Features
+# ✨ Key Features
 
-✅ Executive KPI Dashboard
+## Executive KPIs
 
-✅ Monthly Revenue Trend
+- Total Revenue
+- Total Profit
+- Total Orders
+- Total Customers
+- Average Order Value
+- Gross Margin
 
-✅ Regional Performance Analysis
+---
 
-✅ Category Performance
+## Interactive Analytics
 
-✅ Customer Analytics
+- Monthly Revenue Trend
+- Monthly Profit Trend
+- Regional Sales Analysis
+- Customer Segmentation
+- Product Performance
+- Category Performance
+- Sales Channel Analysis
+- Top Performing Products
 
-✅ Sales Channel Analysis
+---
 
-✅ Interactive Plotly Charts
+## Database Integration
 
-✅ SQL Server Integration
+- SQL Server 2022
+- SQLAlchemy ORM
+- Live Database Connection
+- Dynamic SQL Queries
 
-✅ Streamlit Web Dashboard
+---
 
-✅ Python Analytics Engine
+## Professional Dashboard
+
+- Streamlit Web Application
+- Plotly Interactive Charts
+- Executive Dashboard Layout
+- Modern UI Design
 
 ---
 
@@ -66,21 +109,22 @@ This project helps management answer questions such as:
 
 | Technology | Purpose |
 |------------|----------|
-| Python | Analytics |
-| SQL Server | Database |
+| Python | Analytics Engine |
+| SQL Server | Enterprise Database |
 | SQLAlchemy | Database Connectivity |
 | Pandas | Data Processing |
-| Plotly | Interactive Charts |
+| Plotly | Interactive Visualization |
 | Streamlit | Dashboard |
 | Git | Version Control |
 | GitHub | Portfolio |
+| VS Code | Development |
 
 ---
 
 # 📂 Project Structure
 
 ```text
-03_Python_SQL_Analytics
+Enterprise-Sales-Analytics-Dashboard
 
 │
 ├── app.py
@@ -93,32 +137,104 @@ This project helps management answer questions such as:
 ├── styles.py
 │
 ├── assets
+│   ├── github_cover.png
+│   └── dashboard_home.png
+│
 ├── charts
+│
+├── data
+│
 ├── reports
-└── data
+│
+├── README.md
+│
+└── requirements.txt
 ```
 
 ---
 
-# 📈 Current KPIs
+# 📈 Current Executive KPIs
 
 | KPI | Value |
-|------|------:|
-| Revenue | ₦74.02M |
-| Profit | ₦22.25M |
+|------|-------:|
+| Revenue | ₦74.02 Million |
+| Profit | ₦22.25 Million |
 | Orders | 10,000 |
 | Customers | 1,000 |
-| Average Order Value | ₦7,401 |
+| Average Order Value | ₦7,402 |
 | Gross Margin | 30.01% |
 
 ---
 
-# ⚡ Installation
+# 📊 Planned Dashboard Pages
+
+### Executive Dashboard
+
+✔ Revenue
+
+✔ Profit
+
+✔ Orders
+
+✔ Customers
+
+✔ Gross Margin
+
+---
+
+### Sales Analytics
+
+- Monthly Revenue
+- Monthly Profit
+- Quarterly Performance
+- Year-over-Year Growth
+
+---
+
+### Customer Analytics
+
+- Customer Segmentation
+- Customer Lifetime Value
+- Customer Distribution
+
+---
+
+### Product Analytics
+
+- Best Selling Products
+- Low Performing Products
+- Product Profitability
+
+---
+
+### Regional Analytics
+
+- Sales by Region
+- Sales by Country
+- Regional Revenue Comparison
+
+---
+
+### Executive Insights
+
+- AI-generated Insights
+- Business Recommendations
+- Forecasting
+
+---
+
+# ⚙ Installation
 
 Clone the repository
 
 ```bash
 git clone https://github.com/MichaelAkubueze/Enterprise-Sales-Analytics-Dashboard.git
+```
+
+Open the project
+
+```bash
+cd Enterprise-Sales-Analytics-Dashboard
 ```
 
 Install dependencies
@@ -135,27 +251,70 @@ streamlit run dashboard.py
 
 ---
 
-# 📌 Future Enhancements
+# 📌 Future Improvements
 
-- AI Executive Insights
+- Artificial Intelligence Executive Assistant
 - Revenue Forecasting
 - Customer Lifetime Value
-- Predictive Analytics
+- RFM Analysis
+- ABC Analysis
 - Inventory Dashboard
-- Sales Forecast Dashboard
+- Financial Dashboard
+- HR Dashboard
+- Supply Chain Dashboard
 
 ---
 
-# 👨‍💻 Author
+# 👨‍💻 Developer
 
 ## Michael Akubueze
 
-**MICT E-LEARNING SERVICES LTD**
+### MICT E-LEARNING SERVICES LTD
 
-Enterprise Data Analytics | SQL Server | Python | Business Intelligence
+Enterprise Data Analytics
+
+Business Intelligence
+
+SQL Server Development
+
+Python Programming
+
+Dashboard Development
 
 ---
 
-# ⭐ If you like this project
+# 📫 Contact
 
-Please consider giving it a star.
+**Email**
+
+michaelakubueze@example.com
+
+*(Replace with your preferred email address.)*
+
+---
+
+# ⭐ Support
+
+If you found this project useful:
+
+⭐ Star this repository
+
+🍴 Fork the repository
+
+📢 Share it with others
+
+---
+
+# 📜 License
+
+This project is released under the MIT License.
+
+---
+
+<p align="center">
+
+### Built with ❤️ using Python, SQL Server and Streamlit
+
+**MICT E-LEARNING SERVICES LTD**
+
+</p>

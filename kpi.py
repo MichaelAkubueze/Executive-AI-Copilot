@@ -1,217 +1,225 @@
 # ==========================================================
 # kpi.py
-# Enterprise Sales KPI Engine
+# Enterprise Sales Analytics KPI Engine
+# MICT E-LEARNING SERVICES LTD
 # ==========================================================
 
-from queries import run_query
-
+import pandas as pd
 
 # ==========================================================
 # TOTAL REVENUE
 # ==========================================================
 
-def get_total_revenue():
+def get_total_revenue(df):
+    if df.empty:
+        return 0
 
-    query = """
-    SELECT
-        SUM(Revenue) AS Revenue
-    FROM FactSales
-    """
-
-    return float(run_query(query).iloc[0]["Revenue"])
+    return float(df["Revenue"].sum())
 
 
 # ==========================================================
 # TOTAL PROFIT
 # ==========================================================
 
-def get_total_profit():
+def get_total_profit(df):
+    if df.empty:
+        return 0
 
-    query = """
-    SELECT
-        SUM(Profit) AS Profit
-    FROM FactSales
-    """
-
-    return float(run_query(query).iloc[0]["Profit"])
+    return float(df["Profit"].sum())
 
 
 # ==========================================================
 # TOTAL ORDERS
 # ==========================================================
 
-def get_total_orders():
+def get_total_orders(df):
+    if df.empty:
+        return 0
 
-    query = """
-    SELECT
-        COUNT(*) AS Orders
-    FROM FactSales
-    """
-
-    return int(run_query(query).iloc[0]["Orders"])
+    return int(len(df))
 
 
 # ==========================================================
 # TOTAL CUSTOMERS
 # ==========================================================
 
-def get_total_customers():
+def get_total_customers(df):
+    if df.empty:
+        return 0
 
-    query = """
-    SELECT
-        COUNT(DISTINCT [Customer ID]) AS Customers
-    FROM FactSales
-    """
-
-    return int(run_query(query).iloc[0]["Customers"])
+    return int(df["Customer ID"].nunique())
 
 
 # ==========================================================
 # AVERAGE ORDER VALUE
 # ==========================================================
 
-def get_average_order():
+def get_average_order(df):
+    if df.empty:
+        return 0
 
-    query = """
-    SELECT
-
-        SUM(Revenue) / COUNT(*) AS AverageOrder
-
-    FROM FactSales
-    """
-
-    return float(run_query(query).iloc[0]["AverageOrder"])
+    return float(df["Revenue"].mean())
 
 
 # ==========================================================
 # GROSS MARGIN
 # ==========================================================
 
-def get_gross_margin():
+def get_gross_margin(df):
+    if df.empty:
+        return 0
 
-    query = """
-    SELECT
-
-        AVG([Profit Margin %]) AS GrossMargin
-
-    FROM FactSales
-    """
-
-    return float(run_query(query).iloc[0]["GrossMargin"])
+    return float(df["Profit Margin %"].mean())
 
 
 # ==========================================================
 # MONTHLY REVENUE
 # ==========================================================
 
-def get_monthly_revenue():
+def get_monthly_revenue(df):
 
-    query = """
-    SELECT
+    if df.empty:
+        return pd.DataFrame()
 
-        Year,
-        [Month],
-        MIN([Order Date]) AS SortDate,
-        SUM(Revenue) AS Revenue
+    monthly = (
+        df.groupby(["Year", "Month"], as_index=False)
+        .agg(
+            Revenue=("Revenue", "sum"),
+            Profit=("Profit", "sum"),
+            Orders=("Order ID", "count"),
+            SortDate=("Order Date", "min")
+        )
+        .sort_values("SortDate")
+    )
 
-    FROM FactSales
-
-    GROUP BY
-
-        Year,
-        [Month]
-
-    ORDER BY
-
-        MIN([Order Date])
-    """
-
-    return run_query(query)
+    return monthly
 
 
 # ==========================================================
 # SALES BY REGION
 # ==========================================================
 
-def get_sales_by_region():
+def get_sales_by_region(df):
 
-    query = """
-    SELECT
+    if df.empty:
+        return pd.DataFrame()
 
-        Region,
-        SUM(Revenue) AS Revenue
-
-    FROM FactSales
-
-    GROUP BY Region
-
-    ORDER BY Revenue DESC
-    """
-
-    return run_query(query)
+    return (
+        df.groupby("Region", as_index=False)
+        .agg(
+            Revenue=("Revenue", "sum")
+        )
+        .sort_values("Revenue", ascending=False)
+    )
 
 
 # ==========================================================
 # SALES BY CATEGORY
 # ==========================================================
 
-def get_sales_by_category():
+def get_sales_by_category(df):
 
-    query = """
-    SELECT
+    if df.empty:
+        return pd.DataFrame()
 
-        Category,
-        SUM(Revenue) AS Revenue
-
-    FROM FactSales
-
-    GROUP BY Category
-
-    ORDER BY Revenue DESC
-    """
-
-    return run_query(query)
+    return (
+        df.groupby("Category", as_index=False)
+        .agg(
+            Revenue=("Revenue", "sum")
+        )
+        .sort_values("Revenue", ascending=False)
+    )
 
 
 # ==========================================================
 # SALES BY CHANNEL
 # ==========================================================
 
-def get_sales_by_channel():
+def get_sales_by_channel(df):
 
-    query = """
-    SELECT
+    if df.empty:
+        return pd.DataFrame()
 
-        [Sales Channel],
-        SUM(Revenue) AS Revenue
-
-    FROM FactSales
-
-    GROUP BY [Sales Channel]
-
-    ORDER BY Revenue DESC
-    """
-
-    return run_query(query)
+    return (
+        df.groupby("Sales Channel", as_index=False)
+        .agg(
+            Revenue=("Revenue", "sum")
+        )
+        .sort_values("Revenue", ascending=False)
+    )
 
 
 # ==========================================================
 # CUSTOMER SEGMENTS
 # ==========================================================
 
-def get_customer_segments():
+def get_customer_segments(df):
 
-    query = """
-    SELECT
+    if df.empty:
+        return pd.DataFrame()
 
-        [Customer Segment],
-        COUNT(*) AS Customers
+    return (
+        df.groupby("Customer Segment", as_index=False)
+        .agg(
+            Customers=("Customer ID", "count")
+        )
+        .sort_values("Customers", ascending=False)
+    )
 
-    FROM FactSales
 
-    GROUP BY [Customer Segment]
+# ==========================================================
+# TOP PRODUCTS
+# ==========================================================
 
-    ORDER BY Customers DESC
-    """
+def get_top_products(df, top_n=10):
 
-    return run_query(query)
+    if df.empty:
+        return pd.DataFrame()
+
+    return (
+        df.groupby("Product Name", as_index=False)
+        .agg(
+            Revenue=("Revenue", "sum")
+        )
+        .sort_values("Revenue", ascending=False)
+        .head(top_n)
+    )
+
+
+# ==========================================================
+# TOP CUSTOMERS
+# ==========================================================
+
+def get_top_customers(df, top_n=10):
+
+    if df.empty:
+        return pd.DataFrame()
+
+    return (
+        df.groupby("Customer Name", as_index=False)
+        .agg(
+            Revenue=("Revenue", "sum")
+        )
+        .sort_values("Revenue", ascending=False)
+        .head(top_n)
+    )
+
+
+# ==========================================================
+# SALES BY SALESPERSON
+# ==========================================================
+
+def get_salesperson_performance(df):
+
+    if df.empty:
+        return pd.DataFrame()
+
+    return (
+        df.groupby("Salesperson", as_index=False)
+        .agg(
+            Revenue=("Revenue", "sum"),
+            Profit=("Profit", "sum"),
+            Orders=("Order ID", "count")
+        )
+        .sort_values("Revenue", ascending=False)
+    )

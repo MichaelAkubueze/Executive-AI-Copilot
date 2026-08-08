@@ -1,19 +1,14 @@
-from sqlalchemy import create_engine
-from urllib.parse import quote_plus
-from config import *
+import streamlit as st
+import pandas as pd
 
-connection_string = (
-    f"DRIVER={{{DRIVER}}};"
-    f"SERVER={SERVER};"
-    f"DATABASE={DATABASE};"
-    f"Trusted_Connection={TRUSTED_CONNECTION};"
-    f"TrustServerCertificate={TRUST_SERVER_CERTIFICATE};"
-)
+DATA_PATH = "data/EnterpriseSales.xlsm"
 
-engine = create_engine(
-    "mssql+pyodbc:///?odbc_connect=%s"
-    % quote_plus(connection_string)
-)
+@st.cache_data
+def load_sales_data():
 
-def get_engine():
-    return engine
+    df = pd.read_excel(
+        DATA_PATH,
+        sheet_name="10_Data"
+    )
+
+    return df
