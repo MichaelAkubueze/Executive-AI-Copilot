@@ -1,0 +1,9 @@
+TITLE = 30
+
+SUBTITLE = 18
+
+BODY = 15
+
+SMALL = 12
+
+KPI = 34

@@ -1,68 +1,50 @@
 import pandas as pd
 
+from kpi import *
 
-def executive_summary(df):
+from analytics import *
 
-    revenue = df["Revenue"].sum()
+from targets import (
+    load_targets,
+    revenue_target,
+    profit_target,
+    order_target,
+    customer_target,
+)
 
-    profit = df["Profit"].sum()
 
-    orders = len(df)
+def executive_metrics(df):
 
-    customers = df["Customer ID"].nunique()
-
-    margin = df["Profit Margin %"].mean()
-
-    best_region = (
-        df.groupby("Region")["Revenue"]
-        .sum()
-        .idxmax()
-    )
-
-    best_category = (
-        df.groupby("Category")["Revenue"]
-        .sum()
-        .idxmax()
-    )
-
-    best_salesperson = (
-        df.groupby("Salesperson")["Revenue"]
-        .sum()
-        .idxmax()
-    )
-
-    biggest_customer = (
-        df.groupby("Customer Name")["Revenue"]
-        .sum()
-        .idxmax()
-    )
-
-    fastest_month = (
-        df.groupby("Month")["Revenue"]
-        .sum()
-        .idxmax()
-    )
+    targets = load_targets()
 
     return {
 
-        "Revenue": revenue,
+        "Revenue": get_total_revenue(df),
 
-        "Profit": profit,
+        "Profit": get_total_profit(df),
 
-        "Orders": orders,
+        "Orders": get_total_orders(df),
 
-        "Customers": customers,
+        "Customers": get_total_customers(df),
 
-        "Margin": margin,
+        "Average Order": get_average_order(df),
 
-        "Best Region": best_region,
+        "Gross Margin": get_gross_margin(df),
 
-        "Best Category": best_category,
+        "MoM Growth": get_mom_growth(df),
 
-        "Best Salesperson": best_salesperson,
+        "YoY Growth": get_yoy_growth(df),
 
-        "Biggest Customer": biggest_customer,
+        "Customer Growth": customer_growth(df),
 
-        "Fastest Month": fastest_month,
+        "Order Growth": order_growth(df),
+
+        "Revenue Target": revenue_target(targets),
+
+        "Profit Target": profit_target(targets),
+
+        "Order Target": order_target(targets),
+
+        "Customer Target": customer_target(targets),
 
     }

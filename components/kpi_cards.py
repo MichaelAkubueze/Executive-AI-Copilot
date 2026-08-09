@@ -1,143 +1,124 @@
 import streamlit as st
 
-from kpi import (
-    get_total_revenue,
-    get_total_profit,
-    get_total_orders,
-    get_total_customers,
-    get_average_order,
-    get_gross_margin,
-)
+from kpi import *
+
+from analytics import *
+
+from components.metric_card import metric_card
 
 
 def render_kpis(df):
 
-    revenue = get_total_revenue(df)
-    profit = get_total_profit(df)
-    orders = get_total_orders(df)
-    customers = get_total_customers(df)
-    avg_order = get_average_order(df)
-    margin = get_gross_margin(df)
+    st.markdown("## Executive KPIs")
 
-    cards = [
+    row1 = st.columns(4)
 
-        ("💰 Revenue",
-         f"₦{revenue/1_000_000:,.2f}M",
-         "Business Growing"),
+    with row1[0]:
 
-        ("📈 Profit",
-         f"₦{profit/1_000_000:,.2f}M",
-         "Positive Trend"),
+        metric_card(
 
-        ("🛒 Orders",
-         f"{orders:,}",
-         "Completed Orders"),
+            "Revenue",
 
-        ("👥 Customers",
-         f"{customers:,}",
-         "Active Customers"),
+            f"₦{get_total_revenue(df)/1000000:,.1f}M",
 
-        ("💳 Avg Order",
-         f"₦{avg_order:,.0f}",
-         "Average Basket"),
+            "💰",
 
-        ("📊 Margin",
-         f"{margin:.2%}",
-         "Healthy"),
+            round(get_mom_growth(df)*100,2),
 
-    ]
+            "%",
 
-    st.markdown("""
-    <style>
+            "Business Growth",
 
-    .metric-card{
+        )
 
-        background:white;
+    with row1[1]:
 
-        border-radius:15px;
+        metric_card(
 
-        padding:20px;
+            "Profit",
 
-        box-shadow:0 3px 18px rgba(0,0,0,.08);
+            f"₦{get_total_profit(df)/1000000:,.1f}M",
 
-        border-left:6px solid #2563EB;
+            "📈",
 
-        transition:.3s;
+            round(get_yoy_growth(df)*100,2),
 
-        text-align:center;
+            "%",
 
-    }
+            "Healthy",
 
-    .metric-card:hover{
+        )
 
-        transform:translateY(-4px);
+    with row1[2]:
 
-        box-shadow:0 8px 25px rgba(0,0,0,.15);
+        metric_card(
 
-    }
+            "Orders",
 
-    .metric-title{
+            f"{get_total_orders(df):,}",
 
-        color:#777;
+            "🛒",
 
-        font-size:14px;
+            round(order_growth(df)*100,2),
 
-        margin-bottom:10px;
+            "%",
 
-    }
+            "Active",
 
-    .metric-value{
+        )
 
-        font-size:28px;
+    with row1[3]:
 
-        font-weight:bold;
+        metric_card(
 
-        color:#2563EB;
+            "Customers",
 
-    }
+            f"{get_total_customers(df):,}",
 
-    .metric-sub{
+            "👥",
 
-        color:#10B981;
+            round(customer_growth(df)*100,2),
 
-        font-size:13px;
+            "%",
 
-    }
+            "Growing",
 
-    </style>
+        )
 
-    """, unsafe_allow_html=True)
+    row2 = st.columns(2)
 
-    cols = st.columns(6)
+    with row2[0]:
 
-    for col, card in zip(cols, cards):
+        metric_card(
 
-        title, value, note = card
+            "Average Order",
 
-        with col:
+            f"₦{get_average_order(df):,.0f}",
 
-            st.markdown(f"""
+            "💳",
 
-            <div class="metric-card">
+            None,
 
-            <div class="metric-title">
+            "",
 
-            {title}
+            "Stable",
 
-            </div>
+        )
 
-            <div class="metric-value">
+    with row2[1]:
 
-            {value}
+        metric_card(
 
-            </div>
+            "Gross Margin",
 
-            <div class="metric-sub">
+            f"{get_gross_margin(df):.2%}",
 
-            {note}
+            "📊",
 
-            </div>
+            None,
 
-            </div>
+            "",
 
-            """, unsafe_allow_html=True)
+            "Excellent",
+
+        )

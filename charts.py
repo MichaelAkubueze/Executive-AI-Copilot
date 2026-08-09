@@ -421,5 +421,47 @@ def top_customers(df):
         title="Top 10 Customers"
 
     )
+    
 
     return chart_layout(fig)
+
+# ==========================================================
+# RAW DATA - SALES BY REGION
+# ==========================================================
+
+def get_sales_by_region(df):
+
+    return (
+        df.groupby(
+            "Region",
+            as_index=False
+        )
+        .agg(
+            Revenue=("Revenue", "sum")
+        )
+        .sort_values(
+            "Revenue",
+            ascending=False
+        )
+    )
+
+
+# ==========================================================
+# RAW DATA - SALES BY CATEGORY
+# ==========================================================
+
+def get_sales_by_category(df):
+
+    return (
+        df.groupby(
+            "Category",
+            as_index=False
+        )
+        .agg(
+            Revenue=("Revenue", "sum")
+        )
+        .sort_values(
+            "Revenue",
+            ascending=False
+        )
+    )

@@ -1,0 +1,5 @@
+CARD_PADDING = "22px"
+
+CARD_RADIUS = "18px"
+
+CARD_MARGIN = "10px"
