@@ -1,0 +1,9 @@
+html,
+body,
+[class*="css"]{
+
+    font-family:
+    "Segoe UI",
+    sans-serif;
+
+}

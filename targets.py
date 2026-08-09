@@ -1,37 +1,48 @@
-import pandas as pd
+TARGETS = {
+
+    "Revenue": 282_117_169,
+
+    "Profit": 74_497_128,
+
+    "Orders": 281_217,
+
+    "Customers": 1_200,
+
+    "Gross Margin": 0.35,
+
+}
 
 
-TARGET_FILE = "data/EnterpriseSales.xlsm"
+def get_target(name):
+
+    return TARGETS.get(name, 0)
 
 
-def load_targets():
+def achievement(actual, target):
 
-    df = pd.read_excel(
+    if target == 0:
+        return 0
 
-        TARGET_FILE,
-
-        sheet_name="tblTargets"
-
-    )
-
-    return df
+    return actual / target * 100
 
 
-def revenue_target(df):
+def variance(actual, target):
 
-    return df["Revenue Target"].sum()
-
-
-def profit_target(df):
-
-    return df["Profit Target"].sum()
+    return actual - target
 
 
-def order_target(df):
+def status(actual, target):
 
-    return df["Order Target"].sum()
+    pct = achievement(actual, target)
 
+    if pct >= 100:
+        return "Excellent"
 
-def customer_target(df):
+    if pct >= 90:
+        return "Good"
 
-    return df["Customer Target"].sum()
+    if pct >= 75:
+        return "Watch"
+
+    return "Critical"
+

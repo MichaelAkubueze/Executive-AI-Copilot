@@ -1,0 +1,52 @@
+/* ==========================================================
+   TYPOGRAPHY
+========================================================== */
+
+html,
+body {
+    font-family: "Segoe UI", sans-serif;
+}
+
+/* Streamlit Markdown */
+.stMarkdown h1 {
+    color: #111827 !important;
+    font-size: 38px !important;
+    font-weight: 700 !important;
+}
+
+.stMarkdown h2 {
+    color: #111827 !important;
+    font-size: 28px !important;
+    font-weight: 700 !important;
+}
+
+.stMarkdown h3 {
+    color: #111827 !important;
+    font-size: 22px !important;
+    font-weight: 600 !important;
+}
+
+.stMarkdown p {
+    color: #6B7280 !important;
+}
+
+/* Native headings */
+h1 {
+    color: #111827 !important;
+}
+
+h2 {
+    color: #111827 !important;
+}
+
+h3 {
+    color: #111827 !important;
+}
+
+h4 {
+    color: #111827 !important;
+}
+
+p {
+    color: #6B7280 !important;
+}

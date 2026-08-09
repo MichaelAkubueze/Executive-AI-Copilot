@@ -1,61 +1,89 @@
 import streamlit as st
 
-from analytics import (
-    get_mom_growth,
-    get_yoy_growth,
-    customer_growth,
-    order_growth,
-)
+from analytics import *
 
+from targets import *
 
-# ----------------------------------------------------------
-# Progress Bar
-# ----------------------------------------------------------
+from utils.currency import format_currency
 
-def progress(label, value):
+from utils.numbers import format_number
 
-    pct = max(min(value * 100, 100), 0)
+from components.scorecard_row import scorecard_row
 
-    if pct >= 75:
-        colour = "🟢"
-
-    elif pct >= 40:
-        colour = "🟡"
-
-    else:
-        colour = "🔴"
-
-    st.write(f"**{label}**")
-
-    st.progress(pct / 100)
-
-    st.caption(f"{colour} {pct:.2f}%")
-
-    st.write("")
-
-
-# ----------------------------------------------------------
-# Executive Scorecard
-# ----------------------------------------------------------
 
 def render_scorecard(df):
 
-    progress(
-        "Revenue Growth",
-        get_mom_growth(df),
-    )
+    st.markdown("## 🎯 Executive Performance Scorecard")
 
-    progress(
-        "Profit Growth",
-        get_yoy_growth(df),
-    )
+    metrics=[
 
-    progress(
-        "Order Growth",
-        order_growth(df),
-    )
+        (
 
-    progress(
-        "Customer Growth",
-        customer_growth(df),
-    )
+            "Revenue",
+
+            get_total_revenue(df),
+
+            get_target("Revenue"),
+
+            get_mom_growth(df)
+
+        ),
+
+        (
+
+            "Profit",
+
+            get_total_profit(df),
+
+            get_target("Profit"),
+
+            get_yoy_growth(df)
+
+        ),
+
+        (
+
+            "Orders",
+
+            get_total_orders(df),
+
+            get_target("Orders"),
+
+            order_growth(df)
+
+        ),
+
+        (
+
+            "Customers",
+
+            get_total_customers(df),
+
+            get_target("Customers"),
+
+            customer_growth(df)
+
+        ),
+
+    ]
+
+    for name,actual,target,growth in metrics:
+
+        scorecard_row(
+
+            metric=name,
+
+            actual=format_currency(actual) if "Revenue" in name or "Profit" in name else format_number(actual),
+
+            target=format_currency(target) if "Revenue" in name or "Profit" in name else format_number(target),
+
+            variance=format_currency(variance(actual,target)) if "Revenue" in name or "Profit" in name else format_number(variance(actual,target)),
+
+            achievement=achievement(actual,target),
+
+            status=status(actual,target),
+
+            trend=f"{growth*100:.2f}%"
+
+        )
+        

@@ -1,7 +1,5 @@
 import streamlit as st
 
-from kpi import *
-
 from analytics import *
 
 from components.metric_card import metric_card
@@ -9,116 +7,62 @@ from components.metric_card import metric_card
 
 def render_kpis(df):
 
-    st.markdown("## Executive KPIs")
+    st.markdown("## 📊 Executive KPI Dashboard")
+    st.markdown("<br>", unsafe_allow_html=True)
 
-    row1 = st.columns(4)
+    c1, c2, c3, c4 = st.columns(4)
 
-    with row1[0]:
+    with c1:
 
         metric_card(
-
             "Revenue",
-
-            f"₦{get_total_revenue(df)/1000000:,.1f}M",
-
-            "💰",
-
-            round(get_mom_growth(df)*100,2),
-
-            "%",
-
-            "Business Growth",
-
+            f"₦{get_total_revenue(df)/1_000_000:.2f}M",
+            icon="💰",
+            trend=f"▲ {get_mom_growth(df)*100:.2f}%",
+            target="₦100M",
+            progress=74,
+            badge="Business Growth",
+            badge_color="#2563EB",
         )
 
-    with row1[1]:
+    with c2:
 
         metric_card(
-
             "Profit",
-
-            f"₦{get_total_profit(df)/1000000:,.1f}M",
-
-            "📈",
-
-            round(get_yoy_growth(df)*100,2),
-
-            "%",
-
-            "Healthy",
-
+            f"₦{get_total_profit(df)/1_000_000:.2f}M",
+            icon="📈",
+            trend=f"▲ {get_yoy_growth(df)*100:.2f}%",
+            target="₦30M",
+            progress=74,
+            badge="Healthy",
+            badge_color="#10B981",
         )
 
-    with row1[2]:
+    with c3:
 
         metric_card(
-
             "Orders",
-
             f"{get_total_orders(df):,}",
-
-            "🛒",
-
-            round(order_growth(df)*100,2),
-
-            "%",
-
-            "Active",
-
+            icon="🛒",
+            trend=f"▲ {order_growth(df)*100:.2f}%",
+            target="12,000",
+            progress=83,
+            badge="Active",
+            badge_color="#F59E0B",
         )
 
-    with row1[3]:
+    with c4:
 
         metric_card(
-
             "Customers",
-
             f"{get_total_customers(df):,}",
-
-            "👥",
-
-            round(customer_growth(df)*100,2),
-
-            "%",
-
-            "Growing",
-
+            icon="👥",
+            trend=f"▲ {customer_growth(df)*100:.2f}%",
+            target="1,200",
+            progress=83,
+            badge="Growing",
+            badge_color="#8B5CF6",
         )
-
-    row2 = st.columns(2)
-
-    with row2[0]:
-
-        metric_card(
-
-            "Average Order",
-
-            f"₦{get_average_order(df):,.0f}",
-
-            "💳",
-
-            None,
-
-            "",
-
-            "Stable",
-
-        )
-
-    with row2[1]:
-
-        metric_card(
-
-            "Gross Margin",
-
-            f"{get_gross_margin(df):.2%}",
-
-            "📊",
-
-            None,
-
-            "",
-
-            "Excellent",
-
-        )
+        
+        
+        st.markdown("<br>", unsafe_allow_html=True)

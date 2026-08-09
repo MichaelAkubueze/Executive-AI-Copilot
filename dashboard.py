@@ -2,6 +2,8 @@ import streamlit as st
 
 from database import load_sales_data
 
+#from styles import load_css
+#from theme.css import load_theme
 from styles import load_css
 
 from components.header import render_header
@@ -31,8 +33,9 @@ st.set_page_config(
 # LOAD GLOBAL STYLE
 # ===========================================================
 
+#load_css()
+#load_theme()
 load_css()
-
 # ===========================================================
 # LOAD DATA
 # ===========================================================
@@ -47,18 +50,19 @@ sales_df = render_sidebar(sales_df)
 
 render_header()
 
-st.divider()
+#st.divider()
 
 # ===========================================================
 # EXECUTIVE KPI SECTION
 # ===========================================================
 
-st.subheader("📊 Executive KPIs")
+st.subheader("📊 Executive Dashboard")
+st.caption("Real-time Business Performance Overview")
 
 render_kpis(sales_df)
-
-st.divider()
-
+#
+st.markdown("<br>", unsafe_allow_html=True)
+#
 # ===========================================================
 # EXECUTIVE PERFORMANCE
 # ===========================================================
@@ -69,13 +73,13 @@ with left:
 
     st.subheader("🎯 Executive Performance")
 
-    render_scorecard(sales_df)
+    #render_scorecard(sales_df)
 
 with right:
 
     st.subheader("🚨 Executive Alerts")
 
-    render_alerts(sales_df)
+    #render_alerts(sales_df)
 
 st.divider()
 
@@ -85,7 +89,7 @@ st.divider()
 
 st.subheader("📈 Target Achievement")
 
-render_gauges(sales_df)
+#render_gauges(sales_df)
 
 st.divider()
 
@@ -95,7 +99,7 @@ st.divider()
 
 st.subheader("🧠 AI Executive Recommendation")
 
-render_recommendations(sales_df)
+#render_recommendations(sales_df)
 
 st.divider()
 
@@ -105,7 +109,7 @@ st.divider()
 
 st.subheader("🤖 Executive AI Copilot")
 
-render_copilot(sales_df)
+#render_copilot(sales_df)
 
 st.divider()
 
@@ -115,7 +119,7 @@ st.divider()
 
 st.subheader("📉 Executive Analytics")
 
-render_charts(sales_df)
+#render_charts(sales_df)
 
 st.divider()
 
@@ -123,4 +127,4 @@ st.divider()
 # FOOTER
 # ===========================================================
 
-render_footer()
+#render_footer()

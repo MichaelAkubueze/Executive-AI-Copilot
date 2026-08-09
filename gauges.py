@@ -1,12 +1,18 @@
 import plotly.graph_objects as go
 
 
-def executive_gauge(title, value, target, color="#2563EB"):
-
+#def executive_gauge(title, value, target, color="#2563EB"):
+def executive_gauge(
+    title,
+    actual,
+    target,
+    colour="#2563EB",
+):
     achievement = 0
 
     if target > 0:
-        achievement = value / target * 100
+        #achievement = value / target * 100
+        achievement = actual / target * 100
 
     achievement = min(achievement, 100)
 
@@ -35,7 +41,8 @@ def executive_gauge(title, value, target, color="#2563EB"):
                 },
 
                 "bar": {
-                    "color": color,
+                    #"color": color,
+                    "color": colour,
                     "thickness": 0.35
                 },
 

@@ -1,140 +1,190 @@
 import streamlit as st
 
-from kpi import *
-
-from analytics import *
-
-from targets import (
-    load_targets,
-    revenue_target,
-    profit_target,
+from analytics import (
+    get_total_revenue,
+    get_total_profit,
+    get_total_customers,
+    get_gross_margin,
+    customer_growth,
 )
 
+from targets import (
+    get_target,
+    achievement,
+    variance,
+    status,
+)
+
+from utils.currency import format_currency
+from utils.numbers import format_number
+
+
+# ==========================================================
+# EXECUTIVE ALERT CENTER
+# ==========================================================
 
 def render_alerts(df):
 
-    targets = load_targets()
-
     alerts = []
 
-    # -----------------------------
+    # ------------------------------------------------------
     # Revenue
-    # -----------------------------
+    # ------------------------------------------------------
 
     revenue = get_total_revenue(df)
+    target = get_target("Revenue")
 
-    rev_target = revenue_target(targets)
+    if achievement(revenue, target) < 85:
 
-    if revenue < rev_target:
+        alerts.append({
 
-        alerts.append(
-            (
-                "🔴 Revenue Alert",
-                f"Revenue is ₦{rev_target-revenue:,.0f} below target."
-            )
-        )
+            "priority": "🔴 CRITICAL",
 
-    else:
+            "title": "Revenue Target",
 
-        alerts.append(
-            (
-                "🟢 Revenue",
-                "Revenue target achieved."
-            )
-        )
+            "message":
+                f"Revenue is "
+                f"{format_currency(abs(variance(revenue, target)))} "
+                f"below target.",
 
-    # -----------------------------
+            "status": status(revenue, target)
+
+        })
+
+    # ------------------------------------------------------
     # Profit
-    # -----------------------------
+    # ------------------------------------------------------
 
     profit = get_total_profit(df)
+    target = get_target("Profit")
 
-    prof_target = profit_target(targets)
+    if achievement(profit, target) < 85:
 
-    if profit < prof_target:
+        alerts.append({
 
-        alerts.append(
-            (
-                "🟠 Profit Alert",
-                "Profit is below expected target."
-            )
-        )
+            "priority": "🟠 HIGH",
 
-    else:
+            "title": "Profit Target",
 
-        alerts.append(
-            (
-                "🟢 Profit",
-                "Profit target achieved."
-            )
-        )
+            "message":
+                f"Profit is "
+                f"{format_currency(abs(variance(profit, target)))} "
+                f"below target.",
 
-    # -----------------------------
-    # Margin
-    # -----------------------------
+            "status": status(profit, target)
+
+        })
+
+    # ------------------------------------------------------
+    # Gross Margin
+    # ------------------------------------------------------
 
     margin = get_gross_margin(df)
 
     if margin < 0.25:
 
-        alerts.append(
-            (
-                "🔴 Margin Alert",
-                "Gross Margin below 25%."
-            )
-        )
+        alerts.append({
 
-    # -----------------------------
+            "priority": "🟠 HIGH",
+
+            "title": "Gross Margin",
+
+            "message":
+                f"Gross Margin is only {margin:.2%}.",
+
+            "status": "Watch"
+
+        })
+
+    # ------------------------------------------------------
+    # Customers
+    # ------------------------------------------------------
+
+    customers = get_total_customers(df)
+    target = get_target("Customers")
+
+    if achievement(customers, target) < 90:
+
+        alerts.append({
+
+            "priority": "🟡 MEDIUM",
+
+            "title": "Customer Target",
+
+            "message":
+                f"Only {format_number(customers)} customers recorded "
+                f"against target of {format_number(target)}.",
+
+            "status": status(customers, target)
+
+        })
+
+    # ------------------------------------------------------
     # Customer Growth
-    # -----------------------------
+    # ------------------------------------------------------
 
     growth = customer_growth(df)
 
     if growth < 0:
 
-        alerts.append(
-            (
-                "🟠 Customer Growth",
-                "Customer base is shrinking."
-            )
-        )
+        alerts.append({
+
+            "priority": "🔴 CRITICAL",
+
+            "title": "Customer Growth",
+
+            "message": "Customer base is shrinking.",
+
+            "status": "Critical"
+
+        })
 
     elif growth < 0.03:
 
-        alerts.append(
-            (
-                "🟡 Customer Growth",
-                "Customer growth is slow."
-            )
-        )
+        alerts.append({
 
-    else:
+            "priority": "🟡 MEDIUM",
 
-        alerts.append(
-            (
-                "🟢 Customer Growth",
-                "Healthy customer growth."
-            )
-        )
+            "title": "Customer Growth",
 
-    # -----------------------------
+            "message": "Customer growth is slower than expected.",
 
-    st.markdown("## 🚨 Executive Alert Center")
+            "status": "Watch"
 
-    for title, message in alerts:
+        })
 
-        if "🔴" in title:
+    # ------------------------------------------------------
+    # Render
+    # ------------------------------------------------------
 
-            st.error(f"**{title}**\n\n{message}")
+    st.markdown("### 🚨 Executive Alert Center")
 
-        elif "🟠" in title:
+    if len(alerts) == 0:
 
-            st.warning(f"**{title}**\n\n{message}")
+        st.success("✅ No executive alerts detected.")
 
-        elif "🟡" in title:
+        return
 
-            st.warning(f"**{title}**\n\n{message}")
+    for alert in alerts:
+
+        text = f"""
+**{alert['priority']} — {alert['title']}**
+
+{alert['message']}
+
+**Status:** {alert['status']}
+"""
+
+        if "CRITICAL" in alert["priority"]:
+
+            st.error(text)
+
+        elif "HIGH" in alert["priority"]:
+
+            st.warning(text)
 
         else:
 
-            st.success(f"**{title}**\n\n{message}")
+            st.info(text)
+            
+            

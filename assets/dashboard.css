@@ -1,0 +1,25 @@
+.main {
+    background: #F5F7FB;
+}
+
+.block-container {
+    max-width: 96%;
+    padding-top: 1rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    padding-bottom: 2rem;
+}
+
+section.main > div {
+    padding-top: 0;
+}
+
+h1:not(.header h1),
+h2,
+h3 {
+    color: #111827 !important;
+}
+
+p {
+    color: #6B7280;
+}

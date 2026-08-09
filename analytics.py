@@ -1,93 +1,75 @@
 import pandas as pd
 
+# ==========================================================
+# IMPORT KPI ENGINE
+# ==========================================================
+
+from kpi import (
+    get_total_revenue,
+    get_total_profit,
+    get_total_orders,
+    get_total_customers,
+    get_average_order,
+    get_gross_margin,
+    get_monthly_revenue,
+    get_sales_by_region,
+    get_sales_by_category,
+    get_sales_by_channel,
+    get_customer_segments,
+    get_top_products,
+    get_top_customers,
+    get_salesperson_performance,
+)
 
 # ==========================================================
-# MONTH OVER MONTH (MoM) REVENUE
+# MONTH OVER MONTH GROWTH
 # ==========================================================
 
 def get_mom_growth(df):
 
     monthly = (
         df.groupby(["Year", "Month"], as_index=False)
-          .agg(
-              Revenue=("Revenue", "sum"),
-              Date=("Order Date", "min")
-          )
-          .sort_values("Date")
+        .agg(
+            Revenue=("Revenue", "sum"),
+            Date=("Order Date", "min")
+        )
+        .sort_values("Date")
     )
 
     if len(monthly) < 2:
         return 0
 
-    current = monthly.iloc[-1]["Revenue"]
     previous = monthly.iloc[-2]["Revenue"]
+    current = monthly.iloc[-1]["Revenue"]
 
     if previous == 0:
         return 0
 
-    return ((current - previous) / previous)
+    return (current - previous) / previous
 
 
 # ==========================================================
-# YEAR OVER YEAR (YoY)
+# YEAR OVER YEAR GROWTH
 # ==========================================================
 
 def get_yoy_growth(df):
 
     yearly = (
         df.groupby("Year", as_index=False)
-          .agg(
-              Revenue=("Revenue", "sum")
-          )
-          .sort_values("Year")
+        .agg(Revenue=("Revenue", "sum"))
+        .sort_values("Year")
     )
 
     if len(yearly) < 2:
         return 0
 
-    current = yearly.iloc[-1]["Revenue"]
     previous = yearly.iloc[-2]["Revenue"]
+    current = yearly.iloc[-1]["Revenue"]
 
     if previous == 0:
         return 0
 
-    return ((current - previous) / previous)
-
-
-# ==========================================================
-# REVENUE TREND
-# ==========================================================
-
-def revenue_trend(df):
-
-    monthly = (
-        df.groupby(["Year", "Month"], as_index=False)
-          .agg(
-              Revenue=("Revenue", "sum"),
-              Date=("Order Date", "min")
-          )
-          .sort_values("Date")
-    )
-
-    return monthly
-
-
-# ==========================================================
-# PROFIT TREND
-# ==========================================================
-
-def profit_trend(df):
-
-    monthly = (
-        df.groupby(["Year", "Month"], as_index=False)
-          .agg(
-              Profit=("Profit", "sum"),
-              Date=("Order Date", "min")
-          )
-          .sort_values("Date")
-    )
-
-    return monthly
+    return (current - previous) / previous
 
 
 # ==========================================================
@@ -96,24 +78,22 @@ def profit_trend(df):
 
 def customer_growth(df):
 
-    customers = (
+    yearly = (
         df.groupby("Year", as_index=False)
-          .agg(
-              Customers=("Customer ID", "nunique")
-          )
-          .sort_values("Year")
+        .agg(Customers=("Customer ID", "nunique"))
+        .sort_values("Year")
     )
 
-    if len(customers) < 2:
+    if len(yearly) < 2:
         return 0
 
-    current = customers.iloc[-1]["Customers"]
-    previous = customers.iloc[-2]["Customers"]
+    previous = yearly.iloc[-2]["Customers"]
+    current = yearly.iloc[-1]["Customers"]
 
     if previous == 0:
         return 0
 
-    return ((current - previous) / previous)
+    return (current - previous) / previous
 
 
 # ==========================================================
@@ -122,50 +102,53 @@ def customer_growth(df):
 
 def order_growth(df):
 
-    orders = (
+    yearly = (
         df.groupby("Year", as_index=False)
-          .agg(
-              Orders=("Order ID", "count")
-          )
-          .sort_values("Year")
+        .agg(Orders=("Order ID", "count"))
+        .sort_values("Year")
     )
 
-    if len(orders) < 2:
+    if len(yearly) < 2:
         return 0
 
-    current = orders.iloc[-1]["Orders"]
-    previous = orders.iloc[-2]["Orders"]
+    previous = yearly.iloc[-2]["Orders"]
+    current = yearly.iloc[-1]["Orders"]
 
     if previous == 0:
         return 0
 
-    return ((current - previous) / previous)
+    return (current - previous) / previous
+
 
 # ==========================================================
-# SALES BY REGION (RAW DATA)
+# REVENUE TREND
 # ==========================================================
 
-def get_sales_by_region(df):
+def revenue_trend(df):
 
     return (
-        df.groupby("Region", as_index=False)
-          .agg(
-              Revenue=("Revenue", "sum")
-          )
-          .sort_values("Revenue", ascending=False)
+        df.groupby(["Year", "Month"], as_index=False)
+        .agg(
+            Revenue=("Revenue", "sum"),
+            Date=("Order Date", "min")
+        )
+        .sort_values("Date")
     )
 
 
 # ==========================================================
-# SALES BY CATEGORY (RAW DATA)
+# PROFIT TREND
 # ==========================================================
 
-def get_sales_by_category(df):
+def profit_trend(df):
 
     return (
-        df.groupby("Category", as_index=False)
-          .agg(
-              Revenue=("Revenue", "sum")
-          )
-          .sort_values("Revenue", ascending=False)
+        df.groupby(["Year", "Month"], as_index=False)
+        .agg(
+            Profit=("Profit", "sum"),
+            Date=("Order Date", "min")
+        )
+        .sort_values("Date")
     )
+    
+    
