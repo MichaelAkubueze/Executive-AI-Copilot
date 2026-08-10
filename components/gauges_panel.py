@@ -1,103 +1,75 @@
 import streamlit as st
 
-from gauges import executive_gauge
 
-from targets import get_target
+def gauge(title, value, colour):
 
-from analytics import (
-    get_total_revenue,
-    get_total_profit,
-    get_total_orders,
-    get_total_customers,
-)
+    st.markdown(
+        f"""
+<div style="
+background:white;
+padding:18px;
+border-radius:18px;
+box-shadow:0 6px 18px rgba(0,0,0,.08);
+">
 
+<div style="
+font-weight:700;
+font-size:16px;
+margin-bottom:12px;
+">
 
-# ==========================================================
-# EXECUTIVE GAUGES
-# ==========================================================
+{title}
+
+</div>
+
+<div style="
+background:#E5E7EB;
+height:12px;
+border-radius:30px;
+overflow:hidden;
+">
+
+<div style="
+width:{value}%;
+background:{colour};
+height:12px;
+">
+
+</div>
+
+</div>
+
+<div style="
+margin-top:10px;
+font-size:26px;
+font-weight:700;
+color:{colour};
+">
+
+{value:.0f}%
+
+</div>
+
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
 
 def render_gauges(df):
 
-    g1, g2, g3, g4 = st.columns(4)
+    st.subheader("📈 Target Achievement")
 
-    with g1:
+    c1, c2, c3, c4 = st.columns(4)
 
-        st.plotly_chart(
+    with c1:
+        gauge("Revenue", 74, "#2563EB")
 
-            executive_gauge(
+    with c2:
+        gauge("Profit", 81, "#10B981")
 
-                title="Revenue Achievement",
+    with c3:
+        gauge("Orders", 87, "#F59E0B")
 
-                actual=get_total_revenue(df),
-
-                target=get_target("Revenue"),
-
-                colour="#2563EB",
-
-            ),
-
-            use_container_width=True,
-
-        )
-
-    with g2:
-
-        st.plotly_chart(
-
-            executive_gauge(
-
-                title="Profit Achievement",
-
-                actual=get_total_profit(df),
-
-                target=get_target("Profit"),
-
-                colour="#10B981",
-
-            ),
-
-            use_container_width=True,
-
-        )
-
-    with g3:
-
-        st.plotly_chart(
-
-            executive_gauge(
-
-                title="Orders Achievement",
-
-                actual=get_total_orders(df),
-
-                target=get_target("Orders"),
-
-                colour="#F59E0B",
-
-            ),
-
-            use_container_width=True,
-
-        )
-
-    with g4:
-
-        st.plotly_chart(
-
-            executive_gauge(
-
-                title="Customer Achievement",
-
-                actual=get_total_customers(df),
-
-                target=get_target("Customers"),
-
-                colour="#8B5CF6",
-
-            ),
-
-            use_container_width=True,
-
-        )
-        
-        
+    with c4:
+        gauge("Customers", 92, "#8B5CF6")

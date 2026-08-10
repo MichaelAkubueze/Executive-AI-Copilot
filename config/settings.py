@@ -1,0 +1,21 @@
+APP_NAME = "Enterprise Sales Analytics"
+
+VERSION = "2.0"
+
+AUTHOR = "Michael Akubueze"
+
+COMPANY = "MICT E-LEARNING SERVICES LIMITED"
+
+CURRENCY = "₦"
+
+DATE_FORMAT = "%d %B %Y"
+
+TIME_FORMAT = "%I:%M %p"
+
+PRIMARY_COLOR = "#2563EB"
+
+SUCCESS_COLOR = "#10B981"
+
+WARNING_COLOR = "#F59E0B"
+
+DANGER_COLOR = "#EF4444"

@@ -1,27 +1,25 @@
 import streamlit as st
 
-from advisor import generate_recommendation
-from insights import executive_summary
+from engines.recommendation_engine import generate_recommendations
 
 
 def render_recommendations(df):
 
-    st.markdown("## 🧠 Executive Intelligence")
+    recommendations = generate_recommendations(df)
 
-    col1, col2 = st.columns([3,2])
+    for rec in recommendations:
 
-    with col1:
+        if rec["priority"] == "High":
+            st.error(
+                f"### 🔴 {rec['title']}\n\n{rec['action']}"
+            )
 
-        st.markdown("### Executive Summary")
+        elif rec["priority"] == "Medium":
+            st.warning(
+                f"### 🟡 {rec['title']}\n\n{rec['action']}"
+            )
 
-        st.info(
-            executive_summary(df)
-        )
-
-    with col2:
-
-        st.markdown("### AI Recommendation")
-
-        st.success(
-            generate_recommendation(df)
-        )
+        else:
+            st.success(
+                f"### 🟢 {rec['title']}\n\n{rec['action']}"
+            )

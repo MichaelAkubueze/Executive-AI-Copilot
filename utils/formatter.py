@@ -1,10 +1,16 @@
-from utils.currency import format_currency
-from utils.numbers import format_number
+from config.settings import CURRENCY
 
 
-def format_percent(value):
+def currency(value):
 
-    if value is None:
-        return "0.00%"
+    return f"{CURRENCY}{value:,.2f}"
 
-    return f"{value:.2%}"
+
+def millions(value):
+
+    return f"{CURRENCY}{value/1_000_000:.2f}M"
+
+
+def percent(value):
+
+    return f"{value:.2f}%"

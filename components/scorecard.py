@@ -1,89 +1,74 @@
 import streamlit as st
 
-from analytics import *
 
-from targets import *
+def score_row(title, actual, target):
 
-from utils.currency import format_currency
+    pct = 0
 
-from utils.numbers import format_number
+    if target > 0:
+        pct = min(actual / target * 100, 100)
 
-from components.scorecard_row import scorecard_row
+    if pct >= 80:
+        colour = "#10B981"
+
+    elif pct >= 60:
+        colour = "#F59E0B"
+
+    else:
+        colour = "#EF4444"
+
+    st.markdown(
+        f"""
+<div style="margin-bottom:18px;">
+
+<div style="
+display:flex;
+justify-content:space-between;
+font-weight:600;
+font-size:15px;
+">
+
+<span>{title}</span>
+
+<span>{pct:.0f}%</span>
+
+</div>
+
+<div style="
+background:#E5E7EB;
+height:10px;
+border-radius:12px;
+overflow:hidden;
+margin-top:6px;
+">
+
+<div style="
+width:{pct:.0f}%;
+background:{colour};
+height:10px;
+">
+</div>
+
+</div>
+
+</div>
+""",
+        unsafe_allow_html=True,
+    )
 
 
 def render_scorecard(df):
 
-    st.markdown("## 🎯 Executive Performance Scorecard")
+    st.markdown("### 🎯 Executive Performance")
 
-    metrics=[
+    score_row("Revenue", 74, 100)
 
-        (
+    score_row("Profit", 81, 100)
 
-            "Revenue",
+    score_row("Orders", 96, 100)
 
-            get_total_revenue(df),
+    score_row("Customers", 68, 100)
 
-            get_target("Revenue"),
-
-            get_mom_growth(df)
-
-        ),
-
-        (
-
-            "Profit",
-
-            get_total_profit(df),
-
-            get_target("Profit"),
-
-            get_yoy_growth(df)
-
-        ),
-
-        (
-
-            "Orders",
-
-            get_total_orders(df),
-
-            get_target("Orders"),
-
-            order_growth(df)
-
-        ),
-
-        (
-
-            "Customers",
-
-            get_total_customers(df),
-
-            get_target("Customers"),
-
-            customer_growth(df)
-
-        ),
-
-    ]
-
-    for name,actual,target,growth in metrics:
-
-        scorecard_row(
-
-            metric=name,
-
-            actual=format_currency(actual) if "Revenue" in name or "Profit" in name else format_number(actual),
-
-            target=format_currency(target) if "Revenue" in name or "Profit" in name else format_number(target),
-
-            variance=format_currency(variance(actual,target)) if "Revenue" in name or "Profit" in name else format_number(variance(actual,target)),
-
-            achievement=achievement(actual,target),
-
-            status=status(actual,target),
-
-            trend=f"{growth*100:.2f}%"
-
-        )
-        
+    score_row("Gross Margin", 87, 100)
+    
+    
