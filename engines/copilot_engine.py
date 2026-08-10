@@ -1,102 +1,120 @@
+from engines.intent_engine import detect_intent
+
 from analytics import (
     get_total_revenue,
     get_total_profit,
     get_total_orders,
     get_total_customers,
     get_gross_margin,
+    get_sales_by_region,
+    get_sales_by_category,
 )
 
-from engines.kpi_engine import (
-    revenue_achievement,
-    profit_achievement,
-    orders_achievement,
-    customer_achievement,
-)
+from engines.advisor import generate_recommendation
 
 
 def executive_summary(df):
 
-    revenue = get_total_revenue(df)
-    profit = get_total_profit(df)
-    orders = get_total_orders(df)
-    customers = get_total_customers(df)
-    margin = get_gross_margin(df)
+    return f"""
+📊 Executive Summary
 
-    revenue_pct = revenue_achievement(df)
-    profit_pct = profit_achievement(df)
-    orders_pct = orders_achievement(df)
-    customers_pct = customer_achievement(df)
+Revenue:
+₦{get_total_revenue(df):,.2f}
 
-    summary = f"""
-### 📊 Executive Business Summary
+Profit:
+₦{get_total_profit(df):,.2f}
 
-Total Revenue:
-₦{revenue:,.2f}
-
-Total Profit:
-₦{profit:,.2f}
-
-Orders Processed:
-{orders:,}
+Orders:
+{get_total_orders(df):,}
 
 Customers:
-{customers:,}
+{get_total_customers(df):,}
 
 Gross Margin:
-{margin:.2%}
-
----
-
-Revenue Target Achievement:
-{revenue_pct:.1f}%
-
-Profit Target Achievement:
-{profit_pct:.1f}%
-
-Order Target Achievement:
-{orders_pct:.1f}%
-
-Customer Target Achievement:
-{customers_pct:.1f}%
+{get_gross_margin(df):.2%}
 """
-
-    return summary
 
 
 def answer_question(df, question):
 
-    q = question.lower()
+    intent = detect_intent(question)
 
-    if "revenue" in q:
+    if intent == "revenue":
+
         return (
-            f"Revenue is currently ₦{get_total_revenue(df):,.2f}. "
-            f"Target achievement is {revenue_achievement(df):.1f}%."
+            f"💰 Total Revenue\n\n"
+            f"₦{get_total_revenue(df):,.2f}"
         )
 
-    elif "profit" in q:
+    elif intent == "profit":
+
         return (
-            f"Profit stands at ₦{get_total_profit(df):,.2f}. "
-            f"Target achievement is {profit_achievement(df):.1f}%."
+            f"📈 Total Profit\n\n"
+            f"₦{get_total_profit(df):,.2f}"
         )
 
-    elif "customer" in q:
+    elif intent == "orders":
+
         return (
-            f"The business currently serves "
-            f"{get_total_customers(df):,} customers."
+            f"🛒 Total Orders\n\n"
+            f"{get_total_orders(df):,}"
         )
 
-    elif "order" in q:
+    elif intent == "customers":
+
         return (
-            f"{get_total_orders(df):,} orders have been processed."
+            f"👥 Total Customers\n\n"
+            f"{get_total_customers(df):,}"
         )
 
-    elif "margin" in q:
+    elif intent == "margin":
+
         return (
-            f"Gross Margin is currently "
-            f"{get_gross_margin(df):.2%}."
+            f"📊 Gross Margin\n\n"
+            f"{get_gross_margin(df):.2%}"
         )
 
-    else:
+    elif intent == "best_region":
 
-        return executive_summary(df)
-    
+        region = get_sales_by_region(df).iloc[0]
+
+        return (
+            f"🏆 Best Performing Region\n\n"
+            f"{region['Region']}\n"
+            f"Revenue: ₦{region['Revenue']:,.2f}"
+        )
+
+    elif intent == "worst_region":
+
+        region = get_sales_by_region(df).iloc[-1]
+
+        return (
+            f"⚠ Lowest Performing Region\n\n"
+            f"{region['Region']}\n"
+            f"Revenue: ₦{region['Revenue']:,.2f}"
+        )
+
+    elif intent == "best_category":
+
+        category = get_sales_by_category(df).iloc[0]
+
+        return (
+            f"🥇 Best Product Category\n\n"
+            f"{category['Category']}\n"
+            f"Revenue: ₦{category['Revenue']:,.2f}"
+        )
+
+    elif intent == "recommendation":
+
+        return generate_recommendation(df)
+
+    return (
+        "🤖 I couldn't understand that question.\n\n"
+        "Try asking:\n"
+        "• Revenue\n"
+        "• Profit\n"
+        "• Best Region\n"
+        "• Worst Region\n"
+        "• Best Category\n"
+        "• Recommendation"
+    )

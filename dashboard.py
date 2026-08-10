@@ -10,6 +10,7 @@ from components.digital_twin_panel import render_digital_twin
 from components.board_report_panel import render_board_report
 from components.narrative_panel import render_narrative
 
+
 from components.header import render_header
 from components.sidebar import render_sidebar
 from components.kpi_cards import render_kpis
@@ -102,6 +103,8 @@ render_digital_twin(sales_df)
 st.divider()
 
 render_board_report(sales_df)
+#render_ai_copilot(sales_df)
+#render_copilot(sales_df)
 render_simulator(sales_df)
 
 st.divider()

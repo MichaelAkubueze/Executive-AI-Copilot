@@ -11,9 +11,10 @@ def render_copilot(df):
     st.info(executive_summary(df))
 
     question = st.text_input(
-        "💬 Ask Executive Copilot",
-        placeholder="Why is revenue below target?"
-    )
+    "💬 Ask Executive Copilot",
+    placeholder="Why is revenue below target?",
+    key="executive_copilot_question"
+)
 
     if question:
 
