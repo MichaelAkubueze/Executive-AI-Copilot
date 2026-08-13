@@ -1,42 +1,3 @@
-# Byte-compiled files
-__pycache__/
-*.py[cod]
-
-# Virtual environments
-venv/
-.env
-
-# VS Code
-.vscode/
-
-# Jupyter
-.ipynb_checkpoints/
-
-# Streamlit cache
-.streamlit/
-
-# Logs
-*.log
-
-# Temporary files
-*.tmp
-
-# OS files
-Thumbs.db
-.DS_Store
-
-# Python cache
-.pytest_cache/
-
-# Build folders
-dist/
-build/
-
-# Reports
-reports/*.pdf
-reports/*.xlsx
-
-
 # ==========================================
 # Python
 # ==========================================
@@ -46,43 +7,31 @@ __pycache__/
 *$py.class
 
 # ==========================================
-# Virtual Environment
+# Virtual Environments
 # ==========================================
 
 venv/
-.env/
-.env.*
+env/
+.venv/
+
+# ==========================================
+# IDE
+# ==========================================
+
+.vscode/
+.idea/
 
 # ==========================================
 # Streamlit
 # ==========================================
 
-.streamlit/
+.streamlit/secrets.toml
 
 # ==========================================
-# VS Code
+# Jupyter
 # ==========================================
 
-.vscode/
-
-# ==========================================
-# Operating System
-# ==========================================
-
-Thumbs.db
-.DS_Store
-
-# ==========================================
-# Generated Reports
-# ==========================================
-
-*.pdf
-
-# ==========================================
-# Generated Charts
-# ==========================================
-
-generated_charts/
+.ipynb_checkpoints/
 
 # ==========================================
 # Logs
@@ -91,8 +40,35 @@ generated_charts/
 *.log
 
 # ==========================================
-# Temporary Files
+# Windows
 # ==========================================
 
-*.tmp
-*.bak
+Thumbs.db
+Desktop.ini
+
+# ==========================================
+# macOS
+# ==========================================
+
+.DS_Store
+
+# ==========================================
+# Excel Temporary Files
+# ==========================================
+
+~$*.xlsx
+~$*.xls
+
+# ==========================================
+# Python Cache
+# ==========================================
+
+.pytest_cache/
+.mypy_cache/
+
+# ==========================================
+# KEEP DEMO DATA
+# ==========================================
+# EnterpriseSales.xlsx
+# targets.xlsx
+# are intentionally committed for demonstration.

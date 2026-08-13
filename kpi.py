@@ -66,10 +66,31 @@ def get_average_order(df):
 # ==========================================================
 
 def get_gross_margin(df):
-    if df.empty:
-        return 0
+    """
+    Returns the overall gross profit margin (%).
 
-    return float(df["Profit Margin %"].mean())
+    Uses the existing 'Profit Margin %' column if available.
+    Otherwise calculates it from Revenue and Profit.
+    """
+
+    if df is None or df.empty:
+        return 0.0
+
+    # Use existing margin column if available
+    if "Profit Margin %" in df.columns:
+        return float(df["Profit Margin %"].fillna(0).mean())
+
+    # Calculate margin if the column does not exist
+    if "Revenue" not in df.columns or "Profit" not in df.columns:
+        return 0.0
+
+    revenue = df["Revenue"].sum()
+    profit = df["Profit"].sum()
+
+    if revenue == 0:
+        return 0.0
+
+    return round((profit / revenue) * 100, 2)
 
 
 # ==========================================================

@@ -1,11 +1,63 @@
-from engines.intent_engine import detect_intent
+"""
+==========================================================
+Executive AI Copilot Engine
 
-from analytics import (
-    get_total_revenue,
-    get_total_profit,
-    get_total_orders,
-    get_total_customers,
-    get_gross_margin,
+Routes executive questions to the appropriate
+analysis engine and returns executive-ready responses.
+
+Version : 6.0 RC1
+==========================================================
+"""
+
+# ==========================================================
+# Standard Library
+# ==========================================================
+
+# (none currently)
+
+# ==========================================================
+# Internal Engines
+# ==========================================================
+
+from ai_config import (
+    
+    ACTION_REVENUE,
+    ACTION_PROFIT,
+    ACTION_MARGIN,
+    ACTION_CUSTOMERS,
+    ACTION_ORDERS,
+    ACTION_BUSINESS,
+    ACTION_REGION,
+    ACTION_CATEGORY,
+    ACTION_RISK,
+    ACTION_OPPORTUNITY,
+
+    INSIGHT_REGION,
+    INSIGHT_CATEGORY,
+    INSIGHT_OPPORTUNITY,
+    INSIGHT_RISK,
+    HIGH_MARGIN,
+    MEDIUM_MARGIN,
+    
+    CONFIDENCE_PROFIT,
+    CONFIDENCE_MARGIN,
+    CONFIDENCE_CUSTOMERS,
+    CONFIDENCE_ORDERS,
+    CONFIDENCE_BUSINESS,
+    CONFIDENCE_BRIEFING,
+    CONFIDENCE_REGION,
+    CONFIDENCE_CATEGORY,
+    CONFIDENCE_RISK,
+    CONFIDENCE_RECOMMENDATION,
+    )
+
+
+from engines.intent_engine import detect_intent
+from engines.narrative_engine import executive_narrative
+from engines.reasoning_engine import (
+    explain_revenue,
+    explain_profit,
+    explain_business,
 )
 
 from engines.executive_engine import (
@@ -19,45 +71,86 @@ from engines.opportunity_engine import (
     best_category,
 )
 
+from engines.context_engine import (
+    remember,
+    recall,
+)
+
 from engines.advisor import generate_recommendation
+
+# ==========================================================
+# Analytics
+# ==========================================================
+
+from analytics import (
+    get_total_customers,
+    get_total_orders,
+    get_gross_margin,
+)
 
 
 # ==========================================================
 # EXECUTIVE SUMMARY
 # ==========================================================
 
-def executive_summary(df):
+def executive_summary(df) -> str:
 
     health = business_health(df)
 
     return f"""
-## 🤖 Executive AI
+## 🤖 Executive AI Decision Intelligence
 
-Business Health:
+### Business Health
+
 **{health['status']}**
 
-Overall Health Score:
+### Overall Score
+
 **{health['score']:.1f}%**
 
-You can ask questions like:
+---
 
-• How much revenue did we make?
-• Are we profitable?
-• How healthy is the business?
-• Show executive briefing
-• Show business risks
-• Show opportunities
-• Which region performed best?
-• Which category performed best?
-• Give recommendations
+You can ask:
+
+• Revenue
+• Profit
+• Gross Margin
+• Orders
+• Customers
+• Business Health
+• Best Region
+• Best Category
+• Opportunities
+• Risks
+• Executive Briefing
+• Recommendations
 """
 
 
 # ==========================================================
-# EXECUTIVE COPILOT
+# EXECUTIVE QUESTION ENGINE
 # ==========================================================
 
-def answer_question(df, question):
+def answer_question(df, question: str) -> str:
+    
+    """
+Routes an executive question to the appropriate
+business intelligence engine and returns a
+formatted executive response.
+
+Parameters
+----------
+df : pandas.DataFrame
+    Sales dataset.
+
+question : str
+    Executive question.
+
+Returns
+-------
+str
+    Executive AI response.
+"""
 
     intent = detect_intent(question)
 
@@ -67,44 +160,32 @@ def answer_question(df, question):
 
     if intent == "revenue":
 
-        revenue = get_total_revenue(df)
+        analysis = explain_revenue(df)
 
-        target = 100_000_000
+        return executive_narrative(
 
-        achievement = (revenue / target) * 100
+            title="💰 Executive Revenue Performance",
 
-        if achievement >= 90:
-            status = "🟢 Revenue performance is excellent."
+            metric=f"₦{analysis['metric']:,.2f}",
 
-        elif achievement >= 75:
-            status = "🟠 Revenue performance is healthy but below target."
+            achievement=analysis["achievement"],
 
-        else:
-            status = "🔴 Revenue performance is below expectations."
+            insight=analysis["insight"],
 
-        return f"""
-## 💰 Revenue Performance
+            impact=analysis["impact"],
 
-### Executive Answer
+            risk=analysis["risk"],
 
-Current revenue is **₦{revenue:,.2f}**
+            priority=analysis["priority"],
 
-### Business Context
+            recommendation=analysis["recommendation"],
 
-Revenue achievement is **{achievement:.1f}%** of the annual target.
+            boardroom_takeaway=analysis["boardroom_takeaway"],
 
-### Executive Insight
+            status=analysis["status"],
 
-{status}
-
-### Recommended Action
-
-Increase investment in the highest-performing regions and product categories.
-
-### Confidence
-
-96%
-"""
+            confidence=analysis["confidence"],
+        )
 
     # =====================================================
     # PROFIT
@@ -112,42 +193,68 @@ Increase investment in the highest-performing regions and product categories.
 
     elif intent == "profit":
 
-        profit = get_total_profit(df)
+        analysis = explain_profit(df)
 
-        margin = get_gross_margin(df)
+        profit = analysis["profit"]
+        margin = analysis["margin"]
+        insight = analysis["insight"]
 
-        if margin >= 25:
-            status = "✅ Yes. The business is profitable."
+        if margin >= HIGH_MARGIN:
+
+            opinion = (
+                "🟢 The business is highly profitable."
+            )
+
+        elif margin >= MEDIUM_MARGIN:
+
+            opinion = (
+                "🟠 Profitability is healthy but has room for improvement."
+            )
 
         else:
-            status = "🟠 Profitability needs improvement."
+
+            opinion = (
+                "🔴 Profitability is below the desired strategic level."
+            )
 
         return f"""
-## 📈 Profitability Analysis
+# 📈 Executive Profit Performance
 
-### Executive Answer
+---
 
-{status}
+## Executive Answer
 
-### Current Profit
+{opinion}
+
+---
+
+## Total Profit
 
 ₦{profit:,.2f}
 
-### Gross Margin
+---
+
+## Gross Margin
 
 {margin:.2f}%
 
-### Executive Insight
+---
 
-Profitability remains healthy.
+## Executive Insight
 
-### Recommended Action
+{insight}
 
-Continue focusing on high-margin products while improving revenue growth.
+---
 
-### Confidence
+## Recommended Action
 
-97%
+Increase revenue from high-performing regions while maintaining cost discipline.
+
+---
+
+## Confidence
+
+{CONFIDENCE_PROFIT}%
 """
 
     # =====================================================
@@ -158,18 +265,49 @@ Continue focusing on high-margin products while improving revenue growth.
 
         margin = get_gross_margin(df)
 
+        if margin >= 25:
+
+            interpretation = (
+                "Gross margin exceeds the strategic target."
+            )
+
+        elif margin >= 15:
+
+            interpretation = (
+                "Gross margin is acceptable but can still improve."
+            )
+
+        else:
+
+            interpretation = (
+                "Gross margin requires immediate executive attention."
+            )
+
         return f"""
-## 📊 Gross Margin
+# 📊 Gross Margin Performance
 
-Current Gross Margin
+---
 
-**{margin:.2f}%**
+## Current Gross Margin
 
-This indicates the percentage of revenue retained after direct costs.
+{margin:.2f}%
 
-Confidence
+---
 
-97%
+## Executive Insight
+
+{interpretation}
+
+---
+
+## Recommended Action
+
+Review pricing strategy, discounting, procurement costs and product mix.
+
+---
+
+## Confidence
+{CONFIDENCE_MARGIN}%
 """
 
     # =====================================================
@@ -181,27 +319,39 @@ Confidence
         customers = get_total_customers(df)
 
         return f"""
-## 👥 Customer Performance
+# 👥 Customer Performance
 
-### Executive Answer
+---
 
-The business currently serves **{customers:,}** unique customers.
+## Executive Answer
 
-### Business Context
+Current Active Customers
 
-Customer growth remains an important driver of long-term revenue.
+**{customers:,}**
 
-### Executive Insight
+---
 
-Maintaining strong customer acquisition and retention will improve sustainable growth.
+## Business Context
 
-### Recommended Action
+Customer acquisition and retention are leading indicators of future revenue growth.
 
-Strengthen customer loyalty programmes and acquire new high-value customers.
+---
 
-### Confidence
+## Executive Insight
 
-95%
+A growing customer base improves revenue sustainability and market penetration.
+
+---
+
+## Recommended Action
+
+Increase customer acquisition campaigns while strengthening customer retention programmes.
+
+---
+
+## Confidence
+
+{CONFIDENCE_CUSTOMERS}%
 """
 
     # =====================================================
@@ -213,25 +363,37 @@ Strengthen customer loyalty programmes and acquire new high-value customers.
         orders = get_total_orders(df)
 
         return f"""
-## 🛒 Order Performance
+# 🛒 Order Performance
 
-### Executive Answer
+---
 
-Total processed orders are **{orders:,}**.
+## Executive Answer
 
-### Business Context
+Orders Processed
 
-Order volume reflects current business activity.
+**{orders:,}**
 
-### Executive Insight
+---
 
-Consistent order growth supports revenue expansion.
+## Business Context
 
-### Recommended Action
+Order volume reflects sales effectiveness and market demand.
 
-Increase conversion campaigns to improve order volume.
+---
 
-### Confidence
+## Executive Insight
+
+Consistent order growth supports sustainable revenue expansion.
+
+---
+
+## Recommended Action
+
+Improve conversion rates, cross-selling and repeat purchases.
+
+---
+
+## Confidence
 
 95%
 """
@@ -242,42 +404,64 @@ Increase conversion campaigns to improve order volume.
 
     elif intent == "business_health":
 
-        health = business_health(df)
+        analysis = explain_business(df)
+
+        health = analysis["health"]
+
+        summary = analysis["summary"]
 
         return f"""
-## 🏢 Business Health
+# 🏢 Business Health Assessment
 
-### Executive Answer
+---
 
-Current business status:
+## Executive Answer
 
 **{health['status']}**
 
-### Overall Health Score
+---
+
+## Overall Business Score
 
 **{health['score']:.1f}%**
 
-### KPI Breakdown
+---
 
-• Revenue Score: {health['revenue_score']:.1f}%
+## KPI Breakdown
 
-• Profit Margin Score: {health['margin_score']:.1f}%
+Revenue Score
 
-• Customer Score: {health['customer_score']:.1f}%
+**{health['revenue_score']:.1f}%**
 
-• Order Score: {health['order_score']:.1f}%
+Profit Margin Score
 
-### Executive Insight
+**{health['margin_score']:.1f}%**
 
-The organisation is financially stable with healthy operational performance.
+Customer Score
 
-### Recommended Action
+**{health['customer_score']:.1f}%**
 
-Maintain profitability while accelerating revenue growth.
+Order Score
 
-### Confidence
+**{health['order_score']:.1f}%**
 
-98%
+---
+
+## Executive Insight
+
+{summary}
+
+---
+
+## Recommended Action
+
+Continue strengthening weaker KPIs while maintaining current operational efficiency.
+
+---
+
+## Confidence
+
+{CONFIDENCE_BUSINESS}%
 """
 
     # =====================================================
@@ -286,7 +470,19 @@ Maintain profitability while accelerating revenue growth.
 
     elif intent == "executive_briefing":
 
-        return executive_briefing(df)
+        briefing = executive_briefing(df)
+
+        return f"""
+# 📰 Executive Briefing
+
+{briefing}
+
+---
+
+## Confidence
+
+98%
+"""
 
     # =====================================================
     # BEST REGION
@@ -296,32 +492,48 @@ Maintain profitability while accelerating revenue growth.
 
         region = best_region(df)
 
+        remember("last_region", region)
+
         return f"""
-## 🌍 Regional Performance
+# 🌍 Regional Performance
 
-### Executive Answer
+---
 
-**{region['Region']}** is currently the strongest-performing region.
+## Executive Answer
 
-### Revenue
+**{region['Region']}**
 
-₦{region['Revenue']:,.2f}
+is currently the highest-performing region.
 
-### Growth Opportunity
+---
 
-₦{region['Potential']:,.2f}
+## Revenue
 
-### Executive Insight
+**₦{region['Revenue']:,.2f}**
 
-This region consistently delivers the highest revenue and offers the greatest opportunity for expansion.
+---
 
-### Recommended Action
+## Growth Potential
 
-Increase marketing and operational investment within this region.
+**₦{region['Potential']:,.2f}**
 
-### Confidence
+---
 
-{region['Confidence']}%
+## Confidence
+
+**{region['Confidence']}%**
+
+---
+
+## Executive Insight
+
+This region currently generates the strongest commercial performance.
+
+---
+
+## Recommended Action
+
+Increase marketing investment, sales resources and operational support.
 """
 
     # =====================================================
@@ -332,36 +544,110 @@ Increase marketing and operational investment within this region.
 
         category = best_category(df)
 
+        remember("last_category", category)
+
         return f"""
-## 🏆 Product Category Performance
+# 🏆 Product Category Performance
 
-### Executive Answer
+---
 
-**{category['Category']}** is the highest-performing product category.
+## Executive Answer
 
-### Revenue
+**{category['Category']}**
 
-₦{category['Revenue']:,.2f}
+is currently the highest-performing category.
 
-### Growth Opportunity
+---
 
-₦{category['Potential']:,.2f}
+## Revenue
 
-### Executive Insight
+**₦{category['Revenue']:,.2f}**
 
-Demand remains consistently high for this category.
+---
+
+## Growth Potential
+
+**₦{category['Potential']:,.2f}**
+
+---
+
+## Confidence
+
+**{category['Confidence']}%**
+
+---
+
+## Executive Insight
+
+{INSIGHT_CATEGORY}
+
+---
+
+## Recommended Action
 
 ### Recommended Action
 
-Expand inventory and promotional activities for this category.
-
-### Confidence
-
-{category['Confidence']}%
+{ACTION_CATEGORY}
 """
 
     # =====================================================
-    # OPPORTUNITIES
+    # FOLLOW-UP REGION REVENUE
+    # =====================================================
+
+    elif intent == "followup_region_revenue":
+
+        region = recall("last_region")
+
+        if region is None:
+
+            return """
+# 🌍 Regional Revenue
+
+I don't know which region you are referring to yet.
+
+Please ask:
+
+• Which region performed best?
+
+Then ask:
+
+• How much revenue did it generate?
+"""
+
+        return f"""
+# 🌍 Regional Revenue
+
+---
+
+## Executive Answer
+
+**{region['Region']}**
+
+generated
+
+**₦{region['Revenue']:,.2f}**
+
+---
+
+## Executive Insight
+
+This region remains the strongest revenue contributor.
+
+---
+
+## Recommended Action
+
+Maintain investment while expanding market share.
+
+---
+
+## Confidence
+
+{CONFIDENCE_REGION}%
+"""
+
+    # =====================================================
+    # EXECUTIVE OPPORTUNITIES
     # =====================================================
 
     elif intent == "opportunity":
@@ -370,41 +656,57 @@ Expand inventory and promotional activities for this category.
         category = best_category(df)
 
         return f"""
-## 🚀 Executive Opportunities
+# 🚀 Executive Opportunities
 
-### Highest Growth Region
+---
+
+## Highest Growth Region
 
 **{region['Region']}**
 
 Potential Revenue
 
-₦{region['Potential']:,.2f}
+**₦{region['Potential']:,.2f}**
 
 ---
 
-### Highest Growth Category
+## Highest Growth Category
 
 **{category['Category']}**
 
 Potential Revenue
 
-₦{category['Potential']:,.2f}
+**₦{category['Potential']:,.2f}**
 
-### Executive Insight
+---
 
-Current performance indicates these two business areas provide the greatest opportunity for expansion.
+## Executive Insight
 
-### Recommended Action
+These business areas currently provide the highest potential return on additional investment.
 
-Increase inventory, marketing budget and executive focus in these areas.
+---
 
-### Confidence
+## Recommended Executive Action
+
+• Increase executive attention
+
+• Increase marketing investment
+
+• Allocate additional inventory
+
+• Expand sales coverage
+
+• Closely monitor quarterly performance
+
+---
+
+## Confidence
 
 95%
 """
 
     # =====================================================
-    # RISKS
+    # BUSINESS RISKS
     # =====================================================
 
     elif intent == "risk":
@@ -412,27 +714,52 @@ Increase inventory, marketing budget and executive focus in these areas.
         alerts = executive_alerts(df)
 
         report = """
-## 🚨 Executive Risk Assessment
+# 🚨 Executive Risk Assessment
+
+---
 
 """
 
-        for icon, message in alerts:
-            report += f"{icon} {message}\n\n"
+        if alerts:
+
+            for icon, message in alerts:
+                report += f"{icon} {message}\n\n"
+
+        else:
+
+            report += "🟢 No significant business risks detected.\n\n"
 
         report += """
-### Executive Recommendation
 
-Address medium- and high-risk indicators before they impact profitability.
+---
 
-### Confidence
+## Executive Insight
 
-94%
+The above indicators represent the highest operational risks currently affecting business performance.
+
+---
+
+## Recommended Executive Action
+
+• Address high-risk KPIs immediately
+
+• Monitor medium-risk indicators weekly
+
+• Review strategic performance monthly
+
+• Continue executive oversight
+
+---
+
+## Confidence
+
+{CONFIDENCE_RISK}%
 """
 
         return report
 
     # =====================================================
-    # RECOMMENDATIONS
+    # AI RECOMMENDATIONS
     # =====================================================
 
     elif intent == "recommendation":
@@ -440,43 +767,131 @@ Address medium- and high-risk indicators before they impact profitability.
         recommendation = generate_recommendation(df)
 
         return f"""
-## 🎯 Executive Strategy
+# 🎯 Executive Strategy Recommendation
 
-### AI Recommendation
+---
+
+## AI Recommendation
 
 {recommendation}
 
-### Executive Insight
+---
 
-Recommendations are generated from revenue, profitability, customer performance, regional analysis and product performance.
+## Executive Insight
 
-### Confidence
+Recommendations are generated using:
 
-96%
+• Revenue
+
+• Profitability
+
+• Gross Margin
+
+• Customer Performance
+
+• Order Volume
+
+• Regional Analysis
+
+• Product Performance
+
+• Executive Risk Indicators
+
+---
+
+## Confidence
+
+{CONFIDENCE_RECOMMENDATION}%
 """
 
     # =====================================================
-    # UNKNOWN
+    # FOLLOW-UP (CATEGORY)
+    # =====================================================
+
+    elif intent == "followup_category_revenue":
+
+        category = recall("last_category")
+
+        if category is None:
+
+            return """
+# 🏆 Category Revenue
+
+I don't know which category you are referring to yet.
+
+Please ask:
+
+• Which category performed best?
+
+Then ask:
+
+• How much revenue did it generate?
+"""
+
+        return f"""
+# 🏆 Category Revenue
+
+---
+
+## Executive Answer
+
+**{category['Category']}**
+
+generated
+
+**₦{category['Revenue']:,.2f}**
+
+---
+
+## Executive Insight
+
+This category currently contributes the highest revenue within the portfolio.
+
+---
+
+## Recommended Executive Action
+
+Maintain inventory levels while expanding promotional activities.
+
+---
+
+## Confidence
+
+97%
+"""
+
+    # =====================================================
+    # UNKNOWN QUESTION
     # =====================================================
 
     else:
 
         return """
-## 🤖 Executive Copilot
+# 🤖 Executive AI Assistant
 
-I couldn't understand your request.
+I couldn't confidently understand your request.
 
-Try asking:
+---
+
+## Try asking questions like:
 
 • How much revenue did we make?
 
 • Are we profitable?
+
+• What is our gross margin?
+
+• How many customers do we have?
+
+• How many orders have we processed?
 
 • How healthy is the business?
 
 • Which region performed best?
 
 • Which category performed best?
+
+• How much revenue did it generate?
 
 • Show opportunities
 
@@ -485,4 +900,10 @@ Try asking:
 • Give executive briefing
 
 • Give recommendations
+
+• Should we invest more?
+
+---
+
+Executive AI v6.0 is ready to answer strategic business questions using your enterprise sales data.
 """

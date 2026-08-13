@@ -1,6 +1,21 @@
-import pandas as pd
-
-
+from analytics import (
+    get_total_revenue,
+    get_total_profit,
+    get_total_orders,
+    get_total_customers,
+    get_gross_margin,
+)
+from engines.target_engine import get_target
+from ai_config import (
+    DEFAULT_REVENUE_TARGET,
+    DEFAULT_CUSTOMER_TARGET,
+    DEFAULT_ORDER_TARGET,
+    HIGH_MARGIN,
+    STATUS_EXCELLENT,
+    STATUS_HEALTHY,
+    STATUS_WATCH,
+    STATUS_CRITICAL,
+)
 def safe_percent(actual, target):
     """
     Returns achievement percentage capped between 0 and 100.
@@ -20,27 +35,24 @@ def business_health(df):
     # ACTUAL VALUES
     # -----------------------------
 
-    revenue = df["Revenue"].sum()
+    revenue = get_total_revenue(df)
 
-    profit = df["Profit"].sum()
+    profit = get_total_profit(df)
 
-    customers = df["Customer ID"].nunique()
+    customers = get_total_customers(df)
 
-    orders = len(df)
+    orders = get_total_orders(df)
 
-    gross_margin = (profit / revenue * 100) if revenue else 0
+    gross_margin = get_gross_margin(df)
 
     # -----------------------------
     # TARGETS
     # -----------------------------
 
-    revenue_target = 100_000_000
-
-    profit_margin_target = 25
-
-    customer_target = 1200
-
-    order_target = 12000
+    revenue_target = get_target("Revenue") or DEFAULT_REVENUE_TARGET
+    profit_margin_target = HIGH_MARGIN
+    customer_target = get_target("Customers") or DEFAULT_CUSTOMER_TARGET
+    order_target = get_target("Orders") or DEFAULT_ORDER_TARGET
 
     # -----------------------------
     # KPI ACHIEVEMENTS
@@ -89,20 +101,16 @@ def business_health(df):
     # -----------------------------
 
     if score >= 90:
-
-        status = "🟢 Excellent"
+        status = STATUS_EXCELLENT
 
     elif score >= 75:
-
-        status = "🟢 Healthy"
+        status = STATUS_HEALTHY
 
     elif score >= 60:
-
-        status = "🟠 Watch"
+        status = STATUS_WATCH
 
     else:
-
-        status = "🔴 Critical"
+        status = STATUS_CRITICAL
 
     return {
 

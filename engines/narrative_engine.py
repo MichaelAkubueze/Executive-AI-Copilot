@@ -1,76 +1,196 @@
-from analytics import (
-    get_total_revenue,
-    get_total_profit,
-    get_total_orders,
-    get_total_customers,
-    get_gross_margin,
+"""
+==========================================================
+Executive AI Narrative Engine
+
+Purpose:
+    Converts business analysis into executive-ready
+    narratives for the Executive Copilot.
+
+Version:
+    6.0 RC1
+==========================================================
+"""
+
+# ==========================================================
+# EXECUTIVE AI NARRATIVE
+# Used by Executive Copilot
+# ==========================================================
+
+from typing import Optional
+from ai_config import (
+    DEFAULT_BOARDROOM_TAKEAWAY,
+    AI_DISCLOSURE,
 )
+from engines.constants import STATUS_ICONS
 
-from engines.target_engine import get_target
+def executive_narrative(
+    title: str,
+    metric: str,
+    achievement: float,
+    insight: str,
+    impact: str,
+    risk: str,
+    priority: str,
+    recommendation: str,
+    boardroom_takeaway: Optional[str],
+    status: str,
+    confidence: int,
+) -> str:
+    
+    """
+Build a standardized executive narrative.
 
+Parameters
+----------
+title
+metric
+achievement
+insight
+impact
+risk
+priority
+recommendation
+boardroom_takeaway
+status
+confidence
+
+Returns
+-------
+str
+    Formatted executive report.
+"""
+    
+
+
+    icon = STATUS_ICONS.get(status, "🟠")
+
+    boardroom_takeaway = (
+    boardroom_takeaway or DEFAULT_BOARDROOM_TAKEAWAY
+)
+    return f"""
+# {title}
+
+---
+
+## 📌 Executive Answer
+
+{metric}
+
+---
+
+## 📊 Business Context
+
+### Target Achievement
+
+**{achievement:.1f}%**
+
+### Current Status
+
+{icon} **{status}**
+
+---
+
+## 🧠 Executive Interpretation
+
+{insight}
+
+---
+
+## 💼 Business Impact
+
+{impact}
+
+---
+
+## ⚠️ Risk Level
+
+**{risk}**
+
+---
+
+## 🎯 Executive Priority
+
+**{priority}**
+
+---
+
+## 🚀 Recommended Executive Actions
+
+{recommendation}
+
+---
+
+## 🏛️ Boardroom Takeaway
+
+{boardroom_takeaway}
+
+---
+
+## 📈 Confidence Level
+
+**{confidence}%**
+
+{AI_DISCLOSURE}
+
+"""
+
+
+# ==========================================================
+# BOARD REPORT NARRATIVE
+# Used by PDF Executive Board Report
+# ==========================================================
 
 def generate_narrative(df):
 
+    from analytics import (
+        get_total_revenue,
+        get_total_profit,
+        get_gross_margin,
+        get_total_orders,
+        get_total_customers,
+    )
+
     revenue = get_total_revenue(df)
     profit = get_total_profit(df)
+    margin = get_gross_margin(df)
     orders = get_total_orders(df)
     customers = get_total_customers(df)
-    margin = get_gross_margin(df)
 
-    revenue_target = get_target("Revenue")
+    return f"""
+# Executive Business Summary
 
-    achievement = 0
+## Financial Performance
 
-    if revenue_target > 0:
-        achievement = revenue / revenue_target * 100
+• Revenue: ₦{revenue:,.2f}
 
-    # Revenue Status
-    if achievement >= 90:
-        revenue_comment = (
-            "Revenue performance is excellent and is approaching target."
-        )
+• Profit: ₦{profit:,.2f}
 
-    elif achievement >= 70:
-        revenue_comment = (
-            "Revenue performance is healthy but remains below target."
-        )
+• Gross Margin: {margin:.2f}%
 
-    else:
-        revenue_comment = (
-            "Revenue requires immediate management attention."
-        )
+---
 
-    # Margin Status
-    if margin >= 0.30:
-        margin_comment = (
-            "Profit margin remains strong."
-        )
-    else:
-        margin_comment = (
-            "Profit margin should be improved."
-        )
+## Operational Performance
 
-    narrative = f"""
-Revenue reached ₦{revenue:,.2f},
-representing {achievement:.1f}% achievement
-against the planned target.
+• Orders Processed: {orders:,}
 
-Profit currently stands at
-₦{profit:,.2f}.
+• Customers Served: {customers:,}
 
-The organisation processed
-{orders:,} customer orders
-while serving
-{customers:,} customers.
+---
 
-Gross margin is currently
-{margin:.2%}.
+## Executive Summary
 
-{revenue_comment}
+The organisation continues to operate based on the current financial
+and operational KPI indicators.
 
-{margin_comment}
+Management should continue focusing on:
 
-Overall business outlook remains positive.
+• Revenue growth
+
+• Profitability
+
+• Customer acquisition
+
+• Operational efficiency
+
+while closely monitoring overall business performance.
 """
-
-    return narrative.strip()

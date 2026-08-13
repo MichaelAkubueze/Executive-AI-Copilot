@@ -71,12 +71,23 @@ Largest Customer
         )
 
         st.info(
+    f"""
+### ⚠ Weakest Category
 
-            f"""
-### Weakest Category
+**Category**
 
-{weak}
+{weak["Category"]}
+
+**Revenue**
+
+₦{weak["Revenue"]:,.2f}
+
+**Risk**
+
+{weak["Risk"]}
+
+**Recommendation**
 
 Review immediately.
 """
-        )
+)
