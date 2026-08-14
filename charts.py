@@ -443,8 +443,12 @@ def get_sales_by_region(df):
             "Revenue",
             ascending=False
         )
+        .reset_index(drop=True)
     )
+    
+    region.insert(0, "Rank", range(1, len(region) + 1))
 
+    return region
 
 # ==========================================================
 # RAW DATA - SALES BY CATEGORY
@@ -464,4 +468,116 @@ def get_sales_by_category(df):
             "Revenue",
             ascending=False
         )
+        .reset_index(drop=True)
     )
+    
+    category.insert(0, "Rank", range(1, len(region) + 1))
+
+    return category
+    
+    
+def top_salespersons(df):
+
+    sales = (
+        df.groupby(
+            "Salesperson",
+            as_index=False
+        )
+        .agg(
+            Revenue=("Revenue", "sum"),
+            Profit=("Profit", "sum")
+        )
+        .sort_values(
+            "Revenue",
+            ascending=False
+        )
+        .head(10)
+    )
+
+    fig = px.bar(
+        sales,
+        x="Revenue",
+        y="Salesperson",
+        orientation="h",
+        color="Profit",
+        color_continuous_scale="Viridis",
+        title="Top 10 Salespersons"
+    )
+
+    return chart_layout(fig)
+
+def sales_by_country(df):
+
+    country = (
+        df.groupby(
+            "Country",
+            as_index=False
+        )
+        .agg(
+            Revenue=("Revenue", "sum")
+        )
+        .sort_values(
+            "Revenue",
+            ascending=False
+        )
+    )
+
+    fig = px.bar(
+        country,
+        x="Country",
+        y="Revenue",
+        color="Revenue",
+        color_continuous_scale="Blues",
+        title="Revenue by Country"
+    )
+
+    return chart_layout(fig)
+def sales_by_city(df):
+
+    city = (
+        df.groupby(
+            "City",
+            as_index=False
+        )
+        .agg(
+            Revenue=("Revenue", "sum")
+        )
+        .sort_values(
+            "Revenue",
+            ascending=False
+        )
+        .head(15)
+    )
+
+    fig = px.bar(
+        city,
+        x="Revenue",
+        y="City",
+        orientation="h",
+        color="Revenue",
+        color_continuous_scale="Turbo",
+        title="Top Cities"
+    )
+
+    return chart_layout(fig)
+def payment_methods(df):
+
+    pay = (
+        df.groupby(
+            "Payment Method",
+            as_index=False
+        )
+        .agg(
+            Revenue=("Revenue", "sum")
+        )
+    )
+
+    fig = px.pie(
+        pay,
+        names="Payment Method",
+        values="Revenue",
+        hole=.55,
+        title="Payment Methods"
+    )
+
+    return chart_layout(fig)

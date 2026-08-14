@@ -145,8 +145,10 @@ st.divider()
 # ===========================================================
 # EXECUTIVE ANALYTICS
 # ===========================================================
-
-render_charts(sales_df)
+render_charts(
+    sales_df,
+    page="home"
+)
 
 st.divider()
 

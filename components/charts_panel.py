@@ -1,135 +1,82 @@
 import streamlit as st
-import plotly.express as px
 
+from charts import (
+    monthly_revenue_chart,
+    sales_by_region,
+    sales_by_category,
+    sales_channel,
+    top_products,
+    top_customers,
+    top_salespersons,
+    sales_by_country,
+)
 
-def render_charts(df):
+def render_charts(df, page="home"):
 
-    st.subheader("📉 Executive Analytics")
+    st.subheader("📊 Executive Analytics")
 
-    # ==========================
-    # ROW 1
-    # ==========================
+    # ==========================================
+    # HOME / SALES DASHBOARD
+    # ==========================================
 
-    c1, c2 = st.columns(2)
+    if page in ["home", "sales"]:
 
-    revenue = (
-        df.groupby("Month", as_index=False)["Revenue"]
-        .sum()
-    )
+        row1_col1, row1_col2 = st.columns(2)
 
-    with c1:
+        with row1_col1:
+            st.plotly_chart(
+                monthly_revenue_chart(df),
+                use_container_width=True
+            )
 
-        fig = px.line(
-            revenue,
-            x="Month",
-            y="Revenue",
-            markers=True,
-            title="Monthly Revenue Trend",
-        )
+        with row1_col2:
+            st.plotly_chart(
+                sales_by_region(df),
+                use_container_width=True
+            )
 
-        fig.update_traces(
-            line_color="#2563EB",
-            marker_size=8,
-        )
+        row2_col1, row2_col2 = st.columns(2)
 
-        fig.update_layout(
-            template="plotly_white",
-            height=420,
-            margin=dict(l=10, r=10, t=45, b=10),
-        )
+        with row2_col1:
+            st.plotly_chart(
+                sales_by_category(df),
+                use_container_width=True
+            )
 
-        st.plotly_chart(
-            fig,
-            use_container_width=True,
-        )
+        with row2_col2:
+            st.plotly_chart(
+                sales_channel(df),
+                use_container_width=True
+            )
 
-    profit = (
-        df.groupby("Month", as_index=False)["Profit"]
-        .sum()
-    )
+        row3_col1, row3_col2 = st.columns(2)
 
-    with c2:
+        with row3_col1:
+            st.plotly_chart(
+                top_products(df),
+                use_container_width=True
+            )
 
-        fig = px.bar(
-            profit,
-            x="Month",
-            y="Profit",
-            title="Monthly Profit",
-        )
+        with row3_col2:
+            st.plotly_chart(
+                top_customers(df),
+                use_container_width=True
+            )
+                        
+# ---------------------------
+# ROW 4
+# ---------------------------
 
-        fig.update_traces(
-            marker_color="#10B981"
-        )
+        col7, col8 = st.columns(2)
 
-        fig.update_layout(
-            template="plotly_white",
-            height=420,
-            margin=dict(l=10, r=10, t=45, b=10),
-        )
+        with col7:
+             st.plotly_chart(
+                top_salespersons(df),
+                use_container_width=True
+            )
 
-        st.plotly_chart(
-            fig,
-            use_container_width=True,
-        )
-
-    # ==========================
-    # ROW 2
-    # ==========================
-
-    c3, c4 = st.columns(2)
-
-    region = (
-        df.groupby("Region", as_index=False)["Revenue"]
-        .sum()
-    )
-
-    with c3:
-
-        fig = px.pie(
-            region,
-            values="Revenue",
-            names="Region",
-            title="Revenue by Region",
-            hole=.55,
-        )
-
-        fig.update_layout(
-            height=420,
-        )
-
-        st.plotly_chart(
-            fig,
-            use_container_width=True,
-        )
-
-    product = (
-        df.groupby("Product Name", as_index=False)["Revenue"]
-        .sum()
-        .sort_values("Revenue", ascending=False)
-        .head(10)
-    )
-
-    with c4:
-
-        fig = px.bar(
-            product,
-            x="Revenue",
-            y="Product Name",
-            orientation="h",
-            title="Top 10 Products",
-        )
-
-        fig.update_traces(
-            marker_color="#F59E0B"
-        )
-
-        fig.update_layout(
-            template="plotly_white",
-            height=420,
-            margin=dict(l=10, r=10, t=45, b=10),
-        )
-
-        st.plotly_chart(
-            fig,
-            use_container_width=True,
-        )
+        with col8:
+            st.plotly_chart(
+                sales_by_country(df),
+                use_container_width=True
+            )
