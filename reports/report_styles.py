@@ -4,68 +4,27 @@ from reportlab.lib.styles import (
     getSampleStyleSheet,
     ParagraphStyle,
 )
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-
-import os
 
 
 # ==========================================================
-# FONT CONFIGURATION
+# PLATFORM-INDEPENDENT FONT CONFIGURATION
 # ==========================================================
 #
-# Use Calibri when it is available locally.
-# Fall back to ReportLab's built-in Helvetica fonts on
-# Linux/Streamlit Cloud.
+# Use ReportLab built-in fonts.
 #
-# This keeps the application platform-independent.
+# This avoids dependency on:
+#   C:\Windows\Fonts
+#
+# and ensures PDF generation works on:
+#   - Windows
+#   - Linux
+#   - Streamlit Cloud
+#   - Other deployment environments
+#
 # ==========================================================
-
-
-CALIBRI_PATH = r"C:\Windows\Fonts\calibri.ttf"
-CALIBRI_BOLD_PATH = r"C:\Windows\Fonts\calibrib.ttf"
-
 
 FONT_REGULAR = "Helvetica"
 FONT_BOLD = "Helvetica-Bold"
-
-
-# ----------------------------------------------------------
-# CALIBRI AVAILABLE?
-# ----------------------------------------------------------
-
-if (
-    os.path.exists(CALIBRI_PATH)
-    and os.path.exists(CALIBRI_BOLD_PATH)
-):
-
-    try:
-
-        if "Calibri" not in pdfmetrics.getRegisteredFontNames():
-
-            pdfmetrics.registerFont(
-                TTFont(
-                    "Calibri",
-                    CALIBRI_PATH,
-                )
-            )
-
-        if "Calibri-Bold" not in pdfmetrics.getRegisteredFontNames():
-
-            pdfmetrics.registerFont(
-                TTFont(
-                    "Calibri-Bold",
-                    CALIBRI_BOLD_PATH,
-                )
-            )
-
-        FONT_REGULAR = "Calibri"
-        FONT_BOLD = "Calibri-Bold"
-
-    except Exception:
-
-        FONT_REGULAR = "Helvetica"
-        FONT_BOLD = "Helvetica-Bold"
 
 
 # ==========================================================
@@ -120,4 +79,3 @@ BODY_STYLE = ParagraphStyle(
     textColor=colors.black,
     spaceAfter=6,
 )
-

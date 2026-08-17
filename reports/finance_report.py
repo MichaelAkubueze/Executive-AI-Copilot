@@ -13,6 +13,7 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
+
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
@@ -26,38 +27,105 @@ from reports.report_utils import (
 # FILE PATHS
 # ==========================================================
 
-LOGO_PATH = (
-    r"C:\Data Analytics Portfolio"
-    r"\03_Python_SQL_Analytics"
-    r"\assets\company_logo.png"
+PROJECT_ROOT = os.path.dirname(
+    os.path.dirname(
+        os.path.abspath(__file__)
+    )
 )
 
-CALIBRI_PATH = (
-    r"C:\Windows\Fonts\calibri.ttf"
-)
-
-CALIBRI_BOLD_PATH = (
-    r"C:\Windows\Fonts\calibrib.ttf"
+LOGO_PATH = os.path.join(
+    PROJECT_ROOT,
+    "assets",
+    "company_logo.png",
 )
 
 
 # ==========================================================
-# REGISTER FONTS
+# PLATFORM-SAFE FONT CONFIGURATION
+# ==========================================================
+#
+# Windows:
+#     Use Calibri if it exists.
+#
+# Streamlit Cloud / Linux:
+#     Calibri does not exist, therefore ReportLab uses
+#     built-in Helvetica fonts.
+#
+# IMPORTANT:
+#     We NEVER call TTFont() unless the font file exists.
+#
+# This prevents:
+#
+# reportlab.pdfbase.ttfonts.TTFError
+#
+# on Streamlit Cloud.
 # ==========================================================
 
-pdfmetrics.registerFont(
-    TTFont(
-        "Calibri",
-        CALIBRI_PATH
-    )
-)
+CALIBRI_PATH = r"C:\Windows\Fonts\calibri.ttf"
+CALIBRI_BOLD_PATH = r"C:\Windows\Fonts\calibrib.ttf"
 
-pdfmetrics.registerFont(
-    TTFont(
-        "Calibri-Bold",
-        CALIBRI_BOLD_PATH
+FONT_REGULAR = "Helvetica"
+FONT_BOLD = "Helvetica-Bold"
+
+
+def configure_fonts():
+
+    global FONT_REGULAR
+    global FONT_BOLD
+
+    registered_fonts = (
+        pdfmetrics.getRegisteredFontNames()
     )
-)
+
+    # ------------------------------------------------------
+    # Check that BOTH font files actually exist
+    # ------------------------------------------------------
+
+    if not (
+        os.path.isfile(CALIBRI_PATH)
+        and os.path.isfile(CALIBRI_BOLD_PATH)
+    ):
+        return
+
+    # ------------------------------------------------------
+    # Register Calibri
+    # ------------------------------------------------------
+
+    try:
+
+        if "Calibri" not in registered_fonts:
+
+            pdfmetrics.registerFont(
+                TTFont(
+                    "Calibri",
+                    CALIBRI_PATH,
+                )
+            )
+
+        if "Calibri-Bold" not in registered_fonts:
+
+            pdfmetrics.registerFont(
+                TTFont(
+                    "Calibri-Bold",
+                    CALIBRI_BOLD_PATH,
+                )
+            )
+
+        FONT_REGULAR = "Calibri"
+        FONT_BOLD = "Calibri-Bold"
+
+    except Exception:
+
+        # --------------------------------------------------
+        # Absolute fallback
+        # --------------------------------------------------
+
+        FONT_REGULAR = "Helvetica"
+        FONT_BOLD = "Helvetica-Bold"
+
+
+# Configure fonts safely
+configure_fonts()
 
 
 # ==========================================================
@@ -66,25 +134,27 @@ pdfmetrics.registerFont(
 
 TITLE_STYLE = ParagraphStyle(
     "FinanceTitle",
-    fontName="Calibri-Bold",
+    fontName=FONT_BOLD,
     fontSize=18,
     leading=22,
     alignment=TA_CENTER,
     spaceAfter=8,
 )
 
+
 SUBTITLE_STYLE = ParagraphStyle(
     "FinanceSubtitle",
-    fontName="Calibri",
+    fontName=FONT_REGULAR,
     fontSize=11,
     leading=14,
     alignment=TA_CENTER,
     spaceAfter=8,
 )
 
+
 HEADING_STYLE = ParagraphStyle(
     "FinanceHeading",
-    fontName="Calibri-Bold",
+    fontName=FONT_BOLD,
     fontSize=13,
     leading=16,
     alignment=TA_LEFT,
@@ -92,25 +162,28 @@ HEADING_STYLE = ParagraphStyle(
     spaceAfter=8,
 )
 
+
 BODY_STYLE = ParagraphStyle(
     "FinanceBody",
-    fontName="Calibri",
+    fontName=FONT_REGULAR,
     fontSize=9.5,
     leading=13,
     alignment=TA_LEFT,
 )
 
+
 TABLE_HEADER_STYLE = ParagraphStyle(
     "FinanceTableHeader",
-    fontName="Calibri-Bold",
+    fontName=FONT_BOLD,
     fontSize=8,
     leading=10,
     textColor=colors.white,
 )
 
+
 TABLE_BODY_STYLE = ParagraphStyle(
     "FinanceTableBody",
-    fontName="Calibri",
+    fontName=FONT_REGULAR,
     fontSize=8,
     leading=10,
 )
@@ -126,20 +199,30 @@ def add_footer(canvas, doc):
 
     width, height = A4
 
+    # ------------------------------------------------------
+    # Footer line
+    # ------------------------------------------------------
+
     canvas.setStrokeColor(
         colors.HexColor("#D9E2F3")
     )
+
+    canvas.setLineWidth(0.5)
 
     canvas.line(
         36,
         35,
         width - 36,
-        35
+        35,
     )
 
+    # ------------------------------------------------------
+    # Footer text
+    # ------------------------------------------------------
+
     canvas.setFont(
-        "Calibri",
-        8
+        FONT_REGULAR,
+        8,
     )
 
     canvas.setFillColor(
@@ -149,228 +232,102 @@ def add_footer(canvas, doc):
     canvas.drawString(
         36,
         22,
-        "MICT E-LEARNING SERVICES LTD"
+        "MICT E-LEARNING SERVICES LTD",
     )
 
     canvas.drawRightString(
         width - 36,
         22,
-        f"Page {doc.page}"
+        f"Page {doc.page}",
     )
 
     canvas.restoreState()
 
 
 # ==========================================================
-# FINANCE EXECUTIVE REPORT
+# SAFE VALUE HELPERS
 # ==========================================================
 
-def create_finance_report(
-    insight,
-    df
-):
+def safe_value(insight, key, default=0):
 
-    filename = (
-        "Enterprise_Finance_Report.pdf"
+    value = insight.get(
+        key,
+        default,
     )
 
-    doc = SimpleDocTemplate(
-        filename,
-        pagesize=A4,
-        rightMargin=36,
-        leftMargin=36,
-        topMargin=42,
-        bottomMargin=50,
-        title="Financial Executive Board Report",
-        author="MICT E-LEARNING SERVICES LTD",
-    )
+    if value is None:
+        return default
 
-    story = []
+    return value
 
-    # ======================================================
-    # LOGO
-    # ======================================================
 
-    if os.path.exists(LOGO_PATH):
+def safe_number(value):
 
-        logo = Image(
-            LOGO_PATH,
-            width=110,
-            height=55,
-            kind="proportional"
-        )
+    try:
+        return float(value)
+    except (
+        TypeError,
+        ValueError,
+    ):
+        return 0.0
 
-        logo.hAlign = "CENTER"
 
-        story.append(
-            logo
-        )
+def safe_text(value):
 
-        story.append(
-            Spacer(1, 8)
-        )
+    if value is None:
+        return ""
 
-    # ======================================================
-    # REPORT HEADER
-    # ======================================================
+    return str(value)
 
-    story.append(
-        Paragraph(
-            "MICT E-LEARNING SERVICES LTD",
-            TITLE_STYLE
-        )
-    )
 
-    story.append(
-        Paragraph(
-            "Enterprise Financial Analytics Platform",
-            SUBTITLE_STYLE
-        )
-    )
+def clean_recommendation(text):
 
-    story.append(
-        Paragraph(
-            "FINANCIAL EXECUTIVE BOARD REPORT",
-            HEADING_STYLE
-        )
-    )
+    text = safe_text(text)
 
-    story.append(
-        Spacer(1, 5)
-    )
-
-    story.append(
-        Paragraph(
-            f"Generated: "
-            f"{report_date()} "
-            f"{report_time()}",
-            BODY_STYLE
-        )
-    )
-
-    story.append(
-        Spacer(1, 18)
-    )
-
-    # ======================================================
-    # EXECUTIVE SUMMARY
-    # ======================================================
-
-    story.append(
-        Paragraph(
-            "Executive Financial Summary",
-            HEADING_STYLE
-        )
-    )
-
-    summary_data = [
-
-        [
-            Paragraph(
-                "Financial Metric",
-                TABLE_HEADER_STYLE
-            ),
-            Paragraph(
-                "Value",
-                TABLE_HEADER_STYLE
-            ),
-        ],
-
-        [
-            Paragraph(
-                "Revenue",
-                TABLE_BODY_STYLE
-            ),
-            Paragraph(
-                f"₦{insight['Revenue']:,.2f}",
-                TABLE_BODY_STYLE
-            ),
-        ],
-
-        [
-            Paragraph(
-                "Cost",
-                TABLE_BODY_STYLE
-            ),
-            Paragraph(
-                f"₦{insight['Cost']:,.2f}",
-                TABLE_BODY_STYLE
-            ),
-        ],
-
-        [
-            Paragraph(
-                "Profit",
-                TABLE_BODY_STYLE
-            ),
-            Paragraph(
-                f"₦{insight['Profit']:,.2f}",
-                TABLE_BODY_STYLE
-            ),
-        ],
-
-        [
-            Paragraph(
-                "Profit Margin",
-                TABLE_BODY_STYLE
-            ),
-            Paragraph(
-                f"{insight['Margin']:.2f}%",
-                TABLE_BODY_STYLE
-            ),
-        ],
-
-        [
-            Paragraph(
-                "Shipping Cost",
-                TABLE_BODY_STYLE
-            ),
-            Paragraph(
-                f"₦{insight['Shipping Cost']:,.2f}",
-                TABLE_BODY_STYLE
-            ),
-        ],
-
-        [
-            Paragraph(
-                "Average Order Value",
-                TABLE_BODY_STYLE
-            ),
-            Paragraph(
-                f"₦{insight['Average Order Value']:,.2f}",
-                TABLE_BODY_STYLE
-            ),
-        ],
-
-        [
-            Paragraph(
-                "Financial Status",
-                TABLE_BODY_STYLE
-            ),
-            Paragraph(
-                insight["Status"],
-                TABLE_BODY_STYLE
-            ),
-        ],
+    remove_items = [
+        "**",
+        "`",
+        "✅",
+        "⚠️",
+        "🚨",
+        "🌍",
+        "🏷️",
+        "🏆",
+        "📊",
+        "🚚",
+        "📈",
+        "💰",
+        "📦",
     ]
 
-    summary_table = Table(
-        summary_data,
-        colWidths=[
-            230,
-            250
-        ]
-    )
+    for item in remove_items:
+        text = text.replace(
+            item,
+            "",
+        )
 
-    summary_table.setStyle(
+    return text.strip()
+
+
+# ==========================================================
+# TABLE STYLE
+# ==========================================================
+
+def apply_standard_table_style(
+    table,
+    header_color="#1F4E78",
+):
+
+    table.setStyle(
         TableStyle(
             [
+
                 (
                     "BACKGROUND",
                     (0, 0),
                     (-1, 0),
                     colors.HexColor(
-                        "#1F4E78"
+                        header_color
                     ),
                 ),
 
@@ -409,17 +366,264 @@ def create_finance_report(
                     "TOPPADDING",
                     (0, 0),
                     (-1, -1),
-                    7,
+                    6,
                 ),
 
                 (
                     "BOTTOMPADDING",
                     (0, 0),
                     (-1, -1),
-                    7,
+                    6,
                 ),
+
             ]
         )
+    )
+
+    return table
+
+
+# ==========================================================
+# FINANCE EXECUTIVE REPORT
+# ==========================================================
+
+def create_finance_report(
+    insight,
+    df,
+):
+
+    filename = (
+        "Enterprise_Finance_Report.pdf"
+    )
+
+    # ======================================================
+    # PDF DOCUMENT
+    # ======================================================
+
+    doc = SimpleDocTemplate(
+        filename,
+        pagesize=A4,
+        rightMargin=36,
+        leftMargin=36,
+        topMargin=42,
+        bottomMargin=50,
+        title="Financial Executive Board Report",
+        author="MICT E-LEARNING SERVICES LTD",
+    )
+
+    story = []
+
+
+    # ======================================================
+    # LOGO
+    # ======================================================
+
+    if os.path.isfile(LOGO_PATH):
+
+        try:
+
+            logo = Image(
+                LOGO_PATH,
+                width=110,
+                height=55,
+                kind="proportional",
+            )
+
+            logo.hAlign = "CENTER"
+
+            story.append(
+                logo
+            )
+
+            story.append(
+                Spacer(
+                    1,
+                    8,
+                )
+            )
+
+        except Exception:
+
+            # Logo should never stop PDF generation
+            pass
+
+
+    # ======================================================
+    # REPORT HEADER
+    # ======================================================
+
+    story.append(
+        Paragraph(
+            "MICT E-LEARNING SERVICES LTD",
+            TITLE_STYLE,
+        )
+    )
+
+    story.append(
+        Paragraph(
+            "Enterprise Financial Analytics Platform",
+            SUBTITLE_STYLE,
+        )
+    )
+
+    story.append(
+        Paragraph(
+            "FINANCIAL EXECUTIVE BOARD REPORT",
+            HEADING_STYLE,
+        )
+    )
+
+    story.append(
+        Spacer(
+            1,
+            5,
+        )
+    )
+
+    story.append(
+        Paragraph(
+            f"Generated: "
+            f"{report_date()} "
+            f"{report_time()}",
+            BODY_STYLE,
+        )
+    )
+
+    story.append(
+        Spacer(
+            1,
+            18,
+        )
+    )
+
+
+    # ======================================================
+    # EXECUTIVE SUMMARY
+    # ======================================================
+
+    story.append(
+        Paragraph(
+            "Executive Financial Summary",
+            HEADING_STYLE,
+        )
+    )
+
+    summary_data = [
+
+        [
+            Paragraph(
+                "Financial Metric",
+                TABLE_HEADER_STYLE,
+            ),
+
+            Paragraph(
+                "Value",
+                TABLE_HEADER_STYLE,
+            ),
+        ],
+
+        [
+            Paragraph(
+                "Revenue",
+                TABLE_BODY_STYLE,
+            ),
+
+            Paragraph(
+                f"₦{safe_number(safe_value(insight, 'Revenue')):,.2f}",
+                TABLE_BODY_STYLE,
+            ),
+        ],
+
+        [
+            Paragraph(
+                "Cost",
+                TABLE_BODY_STYLE,
+            ),
+
+            Paragraph(
+                f"₦{safe_number(safe_value(insight, 'Cost')):,.2f}",
+                TABLE_BODY_STYLE,
+            ),
+        ],
+
+        [
+            Paragraph(
+                "Profit",
+                TABLE_BODY_STYLE,
+            ),
+
+            Paragraph(
+                f"₦{safe_number(safe_value(insight, 'Profit')):,.2f}",
+                TABLE_BODY_STYLE,
+            ),
+        ],
+
+        [
+            Paragraph(
+                "Profit Margin",
+                TABLE_BODY_STYLE,
+            ),
+
+            Paragraph(
+                f"{safe_number(safe_value(insight, 'Margin')):.2f}%",
+                TABLE_BODY_STYLE,
+            ),
+        ],
+
+        [
+            Paragraph(
+                "Shipping Cost",
+                TABLE_BODY_STYLE,
+            ),
+
+            Paragraph(
+                f"₦{safe_number(safe_value(insight, 'Shipping Cost')):,.2f}",
+                TABLE_BODY_STYLE,
+            ),
+        ],
+
+        [
+            Paragraph(
+                "Average Order Value",
+                TABLE_BODY_STYLE,
+            ),
+
+            Paragraph(
+                f"₦{safe_number(safe_value(insight, 'Average Order Value')):,.2f}",
+                TABLE_BODY_STYLE,
+            ),
+        ],
+
+        [
+            Paragraph(
+                "Financial Status",
+                TABLE_BODY_STYLE,
+            ),
+
+            Paragraph(
+                safe_text(
+                    safe_value(
+                        insight,
+                        "Status",
+                        "N/A",
+                    )
+                ),
+                TABLE_BODY_STYLE,
+            ),
+        ],
+    ]
+
+
+    summary_table = Table(
+        summary_data,
+        colWidths=[
+            230,
+            250,
+        ],
+    )
+
+    apply_standard_table_style(
+        summary_table
     )
 
     story.append(
@@ -427,8 +631,12 @@ def create_finance_report(
     )
 
     story.append(
-        Spacer(1, 18)
+        Spacer(
+            1,
+            18,
+        )
     )
+
 
     # ======================================================
     # FINANCIAL HIGHLIGHTS
@@ -437,93 +645,152 @@ def create_finance_report(
     story.append(
         Paragraph(
             "Financial Business Highlights",
-            HEADING_STYLE
+            HEADING_STYLE,
         )
     )
 
     highlights = [
 
-        f"Best Region: <b>"
-        f"{insight['Best Region']}"
-        f"</b>",
+        (
+            "Best Region",
+            safe_value(
+                insight,
+                "Best Region",
+                "N/A",
+            ),
+        ),
 
-        f"Best Category: <b>"
-        f"{insight['Best Category']}"
-        f"</b>",
+        (
+            "Best Category",
+            safe_value(
+                insight,
+                "Best Category",
+                "N/A",
+            ),
+        ),
 
-        f"Top Profit Product: <b>"
-        f"{insight['Top Profit Product']}"
-        f"</b>",
+        (
+            "Top Profit Product",
+            safe_value(
+                insight,
+                "Top Profit Product",
+                "N/A",
+            ),
+        ),
 
-        f"Top Revenue Product: <b>"
-        f"{insight['Top Revenue Product']}"
-        f"</b>",
+        (
+            "Top Revenue Product",
+            safe_value(
+                insight,
+                "Top Revenue Product",
+                "N/A",
+            ),
+        ),
 
-        f"Top 10 Product Revenue "
-        f"Concentration: <b>"
-        f"{insight['Concentration']:.2f}%"
-        f"</b>",
     ]
 
-    for item in highlights:
+    for label, value in highlights:
 
         story.append(
             Paragraph(
-                f"• {item}",
-                BODY_STYLE
+                f"• {label}: "
+                f"<b>{safe_text(value)}</b>",
+                BODY_STYLE,
             )
         )
 
         story.append(
-            Spacer(1, 4)
+            Spacer(
+                1,
+                4,
+            )
         )
 
-    story.append(
-        Spacer(1, 12)
+
+    concentration = safe_number(
+        safe_value(
+            insight,
+            "Concentration",
+            0,
+        )
     )
 
+    story.append(
+        Paragraph(
+            f"• Top 10 Product Revenue "
+            f"Concentration: "
+            f"<b>{concentration:.2f}%</b>",
+            BODY_STYLE,
+        )
+    )
+
+    story.append(
+        Spacer(
+            1,
+            12,
+        )
+    )
+
+
     # ======================================================
-    # AI RECOMMENDATIONS
+    # AI FINANCIAL RECOMMENDATIONS
     # ======================================================
 
     story.append(
         Paragraph(
             "AI Financial Recommendations",
-            HEADING_STYLE
+            HEADING_STYLE,
         )
     )
 
-    for recommendation in insight[
-        "Recommendations"
-    ]:
+    recommendations = safe_value(
+        insight,
+        "Recommendations",
+        [],
+    )
 
-        clean_recommendation = (
-            recommendation
-            .replace("**", "")
-            .replace("✅", "")
-            .replace("⚠️", "")
-            .replace("🚨", "")
-            .replace("🌍", "")
-            .replace("🏷️", "")
-            .replace("🏆", "")
-            .replace("📊", "")
-            .replace("🚚", "")
-        )
+    if not recommendations:
 
         story.append(
             Paragraph(
-                clean_recommendation.strip(),
-                BODY_STYLE
+                "No financial recommendations "
+                "were generated for this reporting period.",
+                BODY_STYLE,
             )
         )
 
-        story.append(
-            Spacer(1, 4)
-        )
+    else:
+
+        for recommendation in recommendations:
+
+            clean = clean_recommendation(
+                recommendation
+            )
+
+            if not clean:
+                continue
+
+            story.append(
+                Paragraph(
+                    f"• {clean}",
+                    BODY_STYLE,
+                )
+            )
+
+            story.append(
+                Spacer(
+                    1,
+                    4,
+                )
+            )
 
     story.append(
-        Spacer(1, 15)
+        Spacer(
+            1,
+            15,
+        )
     )
+
 
     # ======================================================
     # REGIONAL FINANCIAL PERFORMANCE
@@ -532,155 +799,183 @@ def create_finance_report(
     story.append(
         Paragraph(
             "Regional Financial Performance",
-            HEADING_STYLE
+            HEADING_STYLE,
         )
     )
 
-    regional = (
-        df.groupby("Region")
-        .agg(
-            Revenue=("Revenue", "sum"),
-            Cost=("Cost", "sum"),
-            Profit=("Profit", "sum"),
+
+    # ------------------------------------------------------
+    # Validate required columns
+    # ------------------------------------------------------
+
+    required_columns = {
+        "Region",
+        "Revenue",
+        "Cost",
+        "Profit",
+    }
+
+    if required_columns.issubset(
+        set(df.columns)
+    ):
+
+        regional = (
+            df.groupby("Region")
+            .agg(
+                Revenue=(
+                    "Revenue",
+                    "sum",
+                ),
+                Cost=(
+                    "Cost",
+                    "sum",
+                ),
+                Profit=(
+                    "Profit",
+                    "sum",
+                ),
+            )
+            .reset_index()
         )
-        .reset_index()
-    )
 
-    regional["Profit Margin"] = (
-        regional["Profit"]
-        / regional["Revenue"]
-        * 100
-    )
+        regional["Profit Margin"] = (
+            regional["Profit"]
+            / regional["Revenue"]
+            .replace(
+                0,
+                float("nan"),
+            )
+            * 100
+        )
 
-    regional_data = [
+        regional_data = [
 
-        [
-            Paragraph(
-                "Region",
-                TABLE_HEADER_STYLE
-            ),
-            Paragraph(
-                "Revenue",
-                TABLE_HEADER_STYLE
-            ),
-            Paragraph(
-                "Cost",
-                TABLE_HEADER_STYLE
-            ),
-            Paragraph(
-                "Profit",
-                TABLE_HEADER_STYLE
-            ),
-            Paragraph(
-                "Margin",
-                TABLE_HEADER_STYLE
-            ),
+            [
+                Paragraph(
+                    "Region",
+                    TABLE_HEADER_STYLE,
+                ),
+
+                Paragraph(
+                    "Revenue",
+                    TABLE_HEADER_STYLE,
+                ),
+
+                Paragraph(
+                    "Cost",
+                    TABLE_HEADER_STYLE,
+                ),
+
+                Paragraph(
+                    "Profit",
+                    TABLE_HEADER_STYLE,
+                ),
+
+                Paragraph(
+                    "Margin",
+                    TABLE_HEADER_STYLE,
+                ),
+            ]
         ]
-    ]
 
-    for _, row in regional.iterrows():
 
-        regional_data.append(
-            [
-                Paragraph(
-                    str(row["Region"]),
-                    TABLE_BODY_STYLE
-                ),
+        for _, row in regional.iterrows():
 
-                Paragraph(
-                    f"₦{row['Revenue']:,.0f}",
-                    TABLE_BODY_STYLE
-                ),
-
-                Paragraph(
-                    f"₦{row['Cost']:,.0f}",
-                    TABLE_BODY_STYLE
-                ),
-
-                Paragraph(
-                    f"₦{row['Profit']:,.0f}",
-                    TABLE_BODY_STYLE
-                ),
-
-                Paragraph(
-                    f"{row['Profit Margin']:.2f}%",
-                    TABLE_BODY_STYLE
-                ),
+            margin = row[
+                "Profit Margin"
             ]
+
+            if margin != margin:
+                margin = 0
+
+
+            regional_data.append(
+                [
+
+                    Paragraph(
+                        safe_text(
+                            row["Region"]
+                        ),
+                        TABLE_BODY_STYLE,
+                    ),
+
+                    Paragraph(
+                        f"₦{safe_number(row['Revenue']):,.0f}",
+                        TABLE_BODY_STYLE,
+                    ),
+
+                    Paragraph(
+                        f"₦{safe_number(row['Cost']):,.0f}",
+                        TABLE_BODY_STYLE,
+                    ),
+
+                    Paragraph(
+                        f"₦{safe_number(row['Profit']):,.0f}",
+                        TABLE_BODY_STYLE,
+                    ),
+
+                    Paragraph(
+                        f"{safe_number(margin):.2f}%",
+                        TABLE_BODY_STYLE,
+                    ),
+                ]
+            )
+
+
+        regional_table = Table(
+            regional_data,
+            colWidths=[
+                90,
+                115,
+                115,
+                115,
+                65,
+            ],
+            repeatRows=1,
         )
 
-    regional_table = Table(
-        regional_data,
-        colWidths=[
-            90,
-            115,
-            115,
-            115,
-            65
-        ],
-        repeatRows=1
-    )
 
-    regional_table.setStyle(
-        TableStyle(
-            [
-                (
-                    "BACKGROUND",
-                    (0, 0),
-                    (-1, 0),
-                    colors.HexColor(
-                        "#1F4E78"
+        apply_standard_table_style(
+            regional_table
+        )
+
+
+        regional_table.setStyle(
+            TableStyle(
+                [
+                    (
+                        "ALIGN",
+                        (1, 1),
+                        (-1, -1),
+                        "RIGHT",
                     ),
-                ),
+                ]
+            )
+        )
 
-                (
-                    "GRID",
-                    (0, 0),
-                    (-1, -1),
-                    0.5,
-                    colors.HexColor(
-                        "#B7C9E2"
-                    ),
-                ),
 
-                (
-                    "ALIGN",
-                    (1, 1),
-                    (-1, -1),
-                    "RIGHT",
-                ),
+        story.append(
+            regional_table
+        )
 
-                (
-                    "VALIGN",
-                    (0, 0),
-                    (-1, -1),
-                    "MIDDLE",
-                ),
+    else:
 
-                (
-                    "TOPPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    5,
-                ),
+        story.append(
+            Paragraph(
+                "Regional financial data is unavailable "
+                "because the required columns were not found.",
+                BODY_STYLE,
+            )
+        )
 
-                (
-                    "BOTTOMPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    5,
-                ),
-            ]
+
+    story.append(
+        Spacer(
+            1,
+            18,
         )
     )
 
-    story.append(
-        regional_table
-    )
-
-    story.append(
-        Spacer(1, 18)
-    )
 
     # ======================================================
     # CATEGORY FINANCIAL PERFORMANCE
@@ -689,151 +984,174 @@ def create_finance_report(
     story.append(
         Paragraph(
             "Category Financial Performance",
-            HEADING_STYLE
+            HEADING_STYLE,
         )
     )
 
-    category = (
-        df.groupby("Category")
-        .agg(
-            Revenue=("Revenue", "sum"),
-            Cost=("Cost", "sum"),
-            Profit=("Profit", "sum"),
+
+    required_category_columns = {
+        "Category",
+        "Revenue",
+        "Cost",
+        "Profit",
+    }
+
+
+    if required_category_columns.issubset(
+        set(df.columns)
+    ):
+
+        category = (
+            df.groupby("Category")
+            .agg(
+                Revenue=(
+                    "Revenue",
+                    "sum",
+                ),
+                Cost=(
+                    "Cost",
+                    "sum",
+                ),
+                Profit=(
+                    "Profit",
+                    "sum",
+                ),
+            )
+            .reset_index()
         )
-        .reset_index()
-    )
 
-    category["Profit Margin"] = (
-        category["Profit"]
-        / category["Revenue"]
-        * 100
-    )
 
-    category_data = [
+        category["Profit Margin"] = (
+            category["Profit"]
+            / category["Revenue"]
+            .replace(
+                0,
+                float("nan"),
+            )
+            * 100
+        )
 
-        [
-            Paragraph(
-                "Category",
-                TABLE_HEADER_STYLE
-            ),
-            Paragraph(
-                "Revenue",
-                TABLE_HEADER_STYLE
-            ),
-            Paragraph(
-                "Cost",
-                TABLE_HEADER_STYLE
-            ),
-            Paragraph(
-                "Profit",
-                TABLE_HEADER_STYLE
-            ),
-            Paragraph(
-                "Margin",
-                TABLE_HEADER_STYLE
-            ),
+
+        category_data = [
+
+            [
+                Paragraph(
+                    "Category",
+                    TABLE_HEADER_STYLE,
+                ),
+
+                Paragraph(
+                    "Revenue",
+                    TABLE_HEADER_STYLE,
+                ),
+
+                Paragraph(
+                    "Cost",
+                    TABLE_HEADER_STYLE,
+                ),
+
+                Paragraph(
+                    "Profit",
+                    TABLE_HEADER_STYLE,
+                ),
+
+                Paragraph(
+                    "Margin",
+                    TABLE_HEADER_STYLE,
+                ),
+            ]
         ]
-    ]
 
-    for _, row in category.iterrows():
 
-        category_data.append(
-            [
-                Paragraph(
-                    str(row["Category"]),
-                    TABLE_BODY_STYLE
-                ),
+        for _, row in category.iterrows():
 
-                Paragraph(
-                    f"₦{row['Revenue']:,.0f}",
-                    TABLE_BODY_STYLE
-                ),
-
-                Paragraph(
-                    f"₦{row['Cost']:,.0f}",
-                    TABLE_BODY_STYLE
-                ),
-
-                Paragraph(
-                    f"₦{row['Profit']:,.0f}",
-                    TABLE_BODY_STYLE
-                ),
-
-                Paragraph(
-                    f"{row['Profit Margin']:.2f}%",
-                    TABLE_BODY_STYLE
-                ),
+            margin = row[
+                "Profit Margin"
             ]
+
+            if margin != margin:
+                margin = 0
+
+
+            category_data.append(
+                [
+
+                    Paragraph(
+                        safe_text(
+                            row["Category"]
+                        ),
+                        TABLE_BODY_STYLE,
+                    ),
+
+                    Paragraph(
+                        f"₦{safe_number(row['Revenue']):,.0f}",
+                        TABLE_BODY_STYLE,
+                    ),
+
+                    Paragraph(
+                        f"₦{safe_number(row['Cost']):,.0f}",
+                        TABLE_BODY_STYLE,
+                    ),
+
+                    Paragraph(
+                        f"₦{safe_number(row['Profit']):,.0f}",
+                        TABLE_BODY_STYLE,
+                    ),
+
+                    Paragraph(
+                        f"{safe_number(margin):.2f}%",
+                        TABLE_BODY_STYLE,
+                    ),
+                ]
+            )
+
+
+        category_table = Table(
+            category_data,
+            colWidths=[
+                90,
+                115,
+                115,
+                115,
+                65,
+            ],
+            repeatRows=1,
         )
 
-    category_table = Table(
-        category_data,
-        colWidths=[
-            90,
-            115,
-            115,
-            115,
-            65
-        ],
-        repeatRows=1
-    )
 
-    category_table.setStyle(
-        TableStyle(
-            [
-                (
-                    "BACKGROUND",
-                    (0, 0),
-                    (-1, 0),
-                    colors.HexColor(
-                        "#1F4E78"
-                    ),
-                ),
-
-                (
-                    "GRID",
-                    (0, 0),
-                    (-1, -1),
-                    0.5,
-                    colors.HexColor(
-                        "#B7C9E2"
-                    ),
-                ),
-
-                (
-                    "ALIGN",
-                    (1, 1),
-                    (-1, -1),
-                    "RIGHT",
-                ),
-
-                (
-                    "VALIGN",
-                    (0, 0),
-                    (-1, -1),
-                    "MIDDLE",
-                ),
-
-                (
-                    "TOPPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    5,
-                ),
-
-                (
-                    "BOTTOMPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    5,
-                ),
-            ]
+        apply_standard_table_style(
+            category_table
         )
-    )
 
-    story.append(
-        category_table
-    )
+
+        category_table.setStyle(
+            TableStyle(
+                [
+                    (
+                        "ALIGN",
+                        (1, 1),
+                        (-1, -1),
+                        "RIGHT",
+                    ),
+                ]
+            )
+        )
+
+
+        story.append(
+            category_table
+        )
+
+    else:
+
+        story.append(
+            Paragraph(
+                "Category financial data is unavailable "
+                "because the required columns were not found.",
+                BODY_STYLE,
+            )
+        )
+
 
     # ======================================================
     # BUILD PDF
@@ -842,9 +1160,8 @@ def create_finance_report(
     doc.build(
         story,
         onFirstPage=add_footer,
-        onLaterPages=add_footer
+        onLaterPages=add_footer,
     )
 
+
     return filename
-
-

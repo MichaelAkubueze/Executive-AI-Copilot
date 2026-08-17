@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from engines.settings_engine import (
     get_setting,
@@ -16,10 +17,13 @@ from reportlab.platypus import (
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
+
+from reports.report_styles import (
+    TITLE_STYLE,
+    HEADING_STYLE,
+    BODY_STYLE,
+)
 
 from reports.report_utils import (
     report_date,
@@ -28,61 +32,46 @@ from reports.report_utils import (
 
 
 # ==========================================================
-# FILE PATHS
+# PROJECT PATHS
 # ==========================================================
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 LOGO_PATH = (
-    r"C:\Data Analytics Portfolio"
-    r"\03_Python_SQL_Analytics"
-    r"\assets\company_logo.png"
+    PROJECT_ROOT
+    / "assets"
+    / "company_logo.png"
 )
 
-CALIBRI_PATH = r"C:\Windows\Fonts\calibri.ttf"
-
-CALIBRI_BOLD_PATH = r"C:\Windows\Fonts\calibrib.ttf"
-
 
 # ==========================================================
-# REGISTER FONTS
+# FORECAST REPORT-SPECIFIC STYLES
+# ==========================================================
+#
+# Font names are obtained from the centralized
+# report_styles module.
+#
+# This means:
+#
+# Windows:
+#     Calibri / Calibri-Bold when available
+#
+# Streamlit Cloud / Linux:
+#     Helvetica / Helvetica-Bold fallback
+#
 # ==========================================================
 
-if "Calibri" not in pdfmetrics.getRegisteredFontNames():
+from reportlab.lib.styles import ParagraphStyle
 
-    pdfmetrics.registerFont(
-        TTFont(
-            "Calibri",
-            CALIBRI_PATH
-        )
-    )
-
-
-if "Calibri-Bold" not in pdfmetrics.getRegisteredFontNames():
-
-    pdfmetrics.registerFont(
-        TTFont(
-            "Calibri-Bold",
-            CALIBRI_BOLD_PATH
-        )
-    )
-
-
-# ==========================================================
-# STYLES
-# ==========================================================
-
-TITLE_STYLE = ParagraphStyle(
-    "ForecastTitle",
-    fontName="Calibri-Bold",
-    fontSize=18,
-    leading=22,
-    alignment=TA_CENTER,
-    spaceAfter=8,
+from reports.report_styles import (
+    FONT_REGULAR,
+    FONT_BOLD,
 )
 
 
 SUBTITLE_STYLE = ParagraphStyle(
     "ForecastSubtitle",
-    fontName="Calibri",
+    fontName=FONT_REGULAR,
     fontSize=11,
     leading=14,
     alignment=TA_CENTER,
@@ -90,29 +79,9 @@ SUBTITLE_STYLE = ParagraphStyle(
 )
 
 
-HEADING_STYLE = ParagraphStyle(
-    "ForecastHeading",
-    fontName="Calibri-Bold",
-    fontSize=13,
-    leading=16,
-    alignment=TA_LEFT,
-    spaceBefore=4,
-    spaceAfter=8,
-)
-
-
-BODY_STYLE = ParagraphStyle(
-    "ForecastBody",
-    fontName="Calibri",
-    fontSize=9.5,
-    leading=13,
-    alignment=TA_LEFT,
-)
-
-
 TABLE_HEADER_STYLE = ParagraphStyle(
     "ForecastTableHeader",
-    fontName="Calibri-Bold",
+    fontName=FONT_BOLD,
     fontSize=8,
     leading=10,
     textColor=colors.white,
@@ -121,7 +90,7 @@ TABLE_HEADER_STYLE = ParagraphStyle(
 
 TABLE_BODY_STYLE = ParagraphStyle(
     "ForecastTableBody",
-    fontName="Calibri",
+    fontName=FONT_REGULAR,
     fontSize=8,
     leading=10,
 )
@@ -143,8 +112,10 @@ def add_footer(canvas, doc):
         True,
     )
 
-    # Nothing to draw
-    if not include_footer and not include_page_numbers:
+    if (
+        not include_footer
+        and not include_page_numbers
+    ):
         return
 
     canvas.saveState()
@@ -152,7 +123,7 @@ def add_footer(canvas, doc):
     width, height = A4
 
     # ------------------------------------------------------
-    # FOOTER
+    # FOOTER LINE
     # ------------------------------------------------------
 
     if include_footer:
@@ -161,16 +132,20 @@ def add_footer(canvas, doc):
             colors.HexColor("#D9E2F3")
         )
 
+        canvas.setLineWidth(0.7)
+
         canvas.line(
             36,
             35,
             width - 36,
-            35
+            35,
         )
 
+        # Use Helvetica for footer canvas text.
+        # This is always available in ReportLab.
         canvas.setFont(
-            "Calibri",
-            8
+            "Helvetica",
+            8,
         )
 
         canvas.setFillColor(
@@ -183,7 +158,7 @@ def add_footer(canvas, doc):
             get_setting(
                 "company_name",
                 "MICT E-LEARNING SERVICES LTD",
-            )
+            ),
         )
 
     # ------------------------------------------------------
@@ -193,8 +168,8 @@ def add_footer(canvas, doc):
     if include_page_numbers:
 
         canvas.setFont(
-            "Calibri",
-            8
+            "Helvetica",
+            8,
         )
 
         canvas.setFillColor(
@@ -204,7 +179,7 @@ def add_footer(canvas, doc):
         canvas.drawRightString(
             width - 36,
             22,
-            f"Page {doc.page}"
+            f"Page {doc.page}",
         )
 
     canvas.restoreState()
@@ -217,7 +192,7 @@ def add_footer(canvas, doc):
 def create_forecast_report(
     insight,
     df,
-    forecast
+    forecast,
 ):
 
     company_name = get_setting(
@@ -225,7 +200,9 @@ def create_forecast_report(
         "MICT E-LEARNING SERVICES LTD",
     )
 
-    filename = "Enterprise_Forecast_Report.pdf"
+    filename = (
+        "Enterprise_Forecast_Report.pdf"
+    )
 
     doc = SimpleDocTemplate(
         filename,
@@ -252,11 +229,11 @@ def create_forecast_report(
 
     if (
         include_logo
-        and os.path.exists(LOGO_PATH)
+        and LOGO_PATH.exists()
     ):
 
         logo = Image(
-            LOGO_PATH,
+            str(LOGO_PATH),
             width=110,
             height=55,
             kind="proportional",
@@ -264,7 +241,9 @@ def create_forecast_report(
 
         logo.hAlign = "CENTER"
 
-        story.append(logo)
+        story.append(
+            logo
+        )
 
         story.append(
             Spacer(1, 8)
@@ -534,10 +513,10 @@ def create_forecast_report(
         )
     )
 
-
-    for recommendation in insight[
-        "Recommendations"
-    ]:
+    for recommendation in insight.get(
+        "Recommendations",
+        [],
+    ):
 
         clean_recommendation = (
             recommendation
@@ -569,7 +548,7 @@ def create_forecast_report(
 
 
     # ======================================================
-    # FORECAST TABLE
+    # NEXT MONTH FORECAST
     # ======================================================
 
     story.append(
@@ -701,7 +680,7 @@ def create_forecast_report(
 
 
     # ======================================================
-    # BUILD REPORT
+    # BUILD PDF
     # ======================================================
 
     doc.build(
@@ -712,3 +691,4 @@ def create_forecast_report(
 
 
     return filename
+
