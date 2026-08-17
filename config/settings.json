@@ -1,0 +1,14 @@
+{
+    "company_name": "MICT E-LEARNING SERVICES LTD",
+    "dashboard_title": "Enterprise Sales Analytics",
+    "currency": "₦ Nigerian Naira",
+    "report_language": "English",
+    "show_kpis": true,
+    "show_summaries": true,
+    "show_ai_insights": true,
+    "show_charts": true,
+    "include_logo": true,
+    "include_footer": true,
+    "include_page_numbers": true,
+    "include_generation_date": true
+}

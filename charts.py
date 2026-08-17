@@ -581,3 +581,115 @@ def payment_methods(df):
     )
 
     return chart_layout(fig)
+
+# ==========================================================
+# TOP 20 SALES TRANSACTIONS
+# ==========================================================
+
+def top_sales_transactions(df):
+
+    transactions = (
+
+        df[
+            [
+                "Invoice No",
+                "Order Date",
+                "Customer Name",
+                "Product Name",
+                "Region",
+                "Revenue",
+                "Profit"
+            ]
+        ]
+
+        .sort_values(
+            "Revenue",
+            ascending=False
+        )
+
+        .head(20)
+
+        .reset_index(drop=True)
+
+    )
+
+    transactions.insert(
+        0,
+        "Rank",
+        range(1, len(transactions) + 1)
+    )
+
+    return transactions
+# ==========================================================
+# AI EXECUTIVE INSIGHTS
+# ==========================================================
+def generate_sales_insights(df):
+
+    revenue = df["Revenue"].sum()
+    profit = df["Profit"].sum()
+
+    margin = (profit / revenue) * 100
+
+    best_region = (
+        df.groupby("Region")["Revenue"]
+        .sum()
+        .idxmax()
+    )
+
+    best_category = (
+        df.groupby("Category")["Revenue"]
+        .sum()
+        .idxmax()
+    )
+
+    top_customer = (
+        df.groupby("Customer Name")["Revenue"]
+        .sum()
+        .idxmax()
+    )
+
+    top_salesperson = (
+        df.groupby("Salesperson")["Revenue"]
+        .sum()
+        .idxmax()
+    )
+
+    recommendations = []
+
+    # Margin recommendation
+    if margin < 25:
+        recommendations.append(
+            "⚠ Profit margin is below the target of 25%. Review pricing and operating costs."
+        )
+    else:
+        recommendations.append(
+            "✅ Profit margin is healthy. Maintain current pricing and cost controls."
+        )
+
+    # Always include strategic recommendations
+    recommendations.append(
+        f"📈 Increase marketing investment in the **{best_region}** region."
+    )
+
+    recommendations.append(
+        f"🛒 Increase inventory for the **{best_category}** category."
+    )
+
+    recommendations.append(
+        f"🏆 Recognize **{top_salesperson}** for outstanding sales performance."
+    )
+
+    recommendations.append(
+        f"🤝 Strengthen relationships with **{top_customer}** to encourage repeat business."
+    )
+
+    return {
+        "Revenue": revenue,
+        "Profit": profit,
+        "Margin": margin,
+        "Best Region": best_region,
+        "Best Category": best_category,
+        "Top Customer": top_customer,
+        "Top Salesperson": top_salesperson,
+        "Recommendations": recommendations,
+    }
