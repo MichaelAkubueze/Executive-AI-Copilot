@@ -1,81 +1,288 @@
+import os
+from pathlib import Path
+
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER
-from reportlab.lib.styles import (
-    getSampleStyleSheet,
-    ParagraphStyle,
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
+
+# ==========================================================
+# PROJECT ROOT
+# ==========================================================
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+
+# ==========================================================
+# FONT PATHS
+# ==========================================================
+
+# Windows Segoe UI
+WINDOWS_REGULAR = Path(
+    r"C:\Windows\Fonts\segoeui.ttf"
+)
+
+WINDOWS_BOLD = Path(
+    r"C:\Windows\Fonts\segoeuib.ttf"
+)
+
+
+# Optional project fonts
+#
+# These allow Streamlit Cloud / Linux to use a font
+# committed inside the project repository.
+#
+# Recommended structure:
+#
+# 03_Python_SQL_Analytics/
+#       assets/
+#           fonts/
+#               segoeui.ttf
+#               segoeuib.ttf
+#
+
+PROJECT_REGULAR = (
+    PROJECT_ROOT
+    / "assets"
+    / "fonts"
+    / "segoeui.ttf"
+)
+
+PROJECT_BOLD = (
+    PROJECT_ROOT
+    / "assets"
+    / "fonts"
+    / "segoeuib.ttf"
 )
 
 
 # ==========================================================
-# PLATFORM-INDEPENDENT FONT CONFIGURATION
+# DEFAULT REPORTLAB FONTS
 # ==========================================================
 #
-# Use ReportLab built-in fonts.
+# Helvetica is always available in ReportLab.
 #
-# This avoids dependency on:
-#   C:\Windows\Fonts
+# It is used only as the final fallback.
 #
-# and ensures PDF generation works on:
-#   - Windows
-#   - Linux
-#   - Streamlit Cloud
-#   - Other deployment environments
-#
-# ==========================================================
 
 FONT_REGULAR = "Helvetica"
 FONT_BOLD = "Helvetica-Bold"
 
 
 # ==========================================================
-# BASE STYLES
+# FONT REGISTRATION HELPER
 # ==========================================================
 
-styles = getSampleStyleSheet()
+def register_font(
+    font_name,
+    font_path,
+):
+    """
+    Register a TrueType font safely.
+
+    Returns True if registration succeeds.
+    Returns False if the font cannot be loaded.
+    """
+
+    try:
+
+        if not font_path.exists():
+            return False
+
+        if (
+            font_name
+            not in pdfmetrics.getRegisteredFontNames()
+        ):
+
+            pdfmetrics.registerFont(
+                TTFont(
+                    font_name,
+                    str(font_path),
+                )
+            )
+
+        return True
+
+    except Exception:
+
+        return False
 
 
 # ==========================================================
-# REPORT TITLE
+# SELECT REPORT FONT
+# ==========================================================
+#
+# Priority:
+#
+# 1. Windows Segoe UI
+# 2. Project-bundled Segoe UI
+# 3. Helvetica fallback
+#
+# Segoe UI contains the Naira symbol (₦), which is
+# important for financial PDF reports.
+# ==========================================================
+
+regular_registered = False
+bold_registered = False
+
+
+# ----------------------------------------------------------
+# WINDOWS
+# ----------------------------------------------------------
+
+if (
+    WINDOWS_REGULAR.exists()
+    and WINDOWS_BOLD.exists()
+):
+
+    regular_registered = register_font(
+        "SegoeUI",
+        WINDOWS_REGULAR,
+    )
+
+    bold_registered = register_font(
+        "SegoeUI-Bold",
+        WINDOWS_BOLD,
+    )
+
+
+# ----------------------------------------------------------
+# PROJECT-BUNDLED FONT
+# ----------------------------------------------------------
+
+if not (
+    regular_registered
+    and bold_registered
+):
+
+    regular_registered = register_font(
+        "SegoeUI",
+        PROJECT_REGULAR,
+    )
+
+    bold_registered = register_font(
+        "SegoeUI-Bold",
+        PROJECT_BOLD,
+    )
+
+
+# ----------------------------------------------------------
+# FINAL FONT SELECTION
+# ----------------------------------------------------------
+
+if (
+    regular_registered
+    and bold_registered
+):
+
+    FONT_REGULAR = "SegoeUI"
+    FONT_BOLD = "SegoeUI-Bold"
+
+
+# ==========================================================
+# REPORT STYLES
 # ==========================================================
 
 TITLE_STYLE = ParagraphStyle(
     "ReportTitle",
-    parent=styles["Title"],
     fontName=FONT_BOLD,
-    fontSize=20,
-    leading=24,
+    fontSize=18,
+    leading=22,
     alignment=TA_CENTER,
-    textColor=colors.HexColor("#123B63"),
-    spaceAfter=10,
-)
-
-
-# ==========================================================
-# REPORT HEADING
-# ==========================================================
-
-HEADING_STYLE = ParagraphStyle(
-    "ReportHeading",
-    parent=styles["Heading2"],
-    fontName=FONT_BOLD,
-    fontSize=13,
-    leading=17,
-    textColor=colors.HexColor("#123B63"),
-    spaceBefore=8,
     spaceAfter=8,
 )
 
 
-# ==========================================================
-# REPORT BODY
-# ==========================================================
+SUBTITLE_STYLE = ParagraphStyle(
+    "ReportSubtitle",
+    fontName=FONT_REGULAR,
+    fontSize=11,
+    leading=14,
+    alignment=TA_CENTER,
+    spaceAfter=8,
+)
+
+
+HEADING_STYLE = ParagraphStyle(
+    "ReportHeading",
+    fontName=FONT_BOLD,
+    fontSize=13,
+    leading=16,
+    alignment=TA_LEFT,
+    spaceBefore=4,
+    spaceAfter=8,
+)
+
 
 BODY_STYLE = ParagraphStyle(
     "ReportBody",
-    parent=styles["BodyText"],
     fontName=FONT_REGULAR,
-    fontSize=10,
-    leading=15,
-    textColor=colors.black,
-    spaceAfter=6,
+    fontSize=9.5,
+    leading=13,
+    alignment=TA_LEFT,
 )
+
+
+TABLE_HEADER_STYLE = ParagraphStyle(
+    "ReportTableHeader",
+    fontName=FONT_BOLD,
+    fontSize=8,
+    leading=10,
+    textColor=colors.white,
+)
+
+
+TABLE_BODY_STYLE = ParagraphStyle(
+    "ReportTableBody",
+    fontName=FONT_REGULAR,
+    fontSize=8,
+    leading=10,
+)
+
+
+# ==========================================================
+# OPTIONAL FINANCIAL STYLE
+# ==========================================================
+
+MONEY_STYLE = ParagraphStyle(
+    "ReportMoney",
+    fontName=FONT_REGULAR,
+    fontSize=9,
+    leading=12,
+    alignment=TA_LEFT,
+)
+
+
+MONEY_BOLD_STYLE = ParagraphStyle(
+    "ReportMoneyBold",
+    fontName=FONT_BOLD,
+    fontSize=9,
+    leading=12,
+    alignment=TA_LEFT,
+)
+
+
+# ==========================================================
+# FONT STATUS
+# ==========================================================
+
+def get_report_font_status():
+    """
+    Returns information about the active PDF fonts.
+    Useful for debugging Streamlit Cloud deployments.
+    """
+
+    return {
+        "regular_font": FONT_REGULAR,
+        "bold_font": FONT_BOLD,
+        "regular_registered": (
+            FONT_REGULAR
+            in pdfmetrics.getRegisteredFontNames()
+        ),
+        "bold_registered": (
+            FONT_BOLD
+            in pdfmetrics.getRegisteredFontNames()
+        ),
+    }
