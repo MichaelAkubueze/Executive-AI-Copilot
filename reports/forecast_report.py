@@ -17,12 +17,15 @@ from reportlab.platypus import (
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib.enums import TA_CENTER
+from reportlab.lib.styles import ParagraphStyle
 
 from reports.report_styles import (
     TITLE_STYLE,
     HEADING_STYLE,
     BODY_STYLE,
+    FONT_REGULAR,
+    FONT_BOLD,
 )
 
 from reports.report_utils import (
@@ -47,27 +50,6 @@ LOGO_PATH = (
 # ==========================================================
 # FORECAST REPORT-SPECIFIC STYLES
 # ==========================================================
-#
-# Font names are obtained from the centralized
-# report_styles module.
-#
-# This means:
-#
-# Windows:
-#     Calibri / Calibri-Bold when available
-#
-# Streamlit Cloud / Linux:
-#     Helvetica / Helvetica-Bold fallback
-#
-# ==========================================================
-
-from reportlab.lib.styles import ParagraphStyle
-
-from reports.report_styles import (
-    FONT_REGULAR,
-    FONT_BOLD,
-)
-
 
 SUBTITLE_STYLE = ParagraphStyle(
     "ForecastSubtitle",
@@ -141,10 +123,12 @@ def add_footer(canvas, doc):
             35,
         )
 
-        # Use Helvetica for footer canvas text.
-        # This is always available in ReportLab.
+        # --------------------------------------------------
+        # CENTRALIZED PROJECT FONT
+        # --------------------------------------------------
+
         canvas.setFont(
-            "Helvetica",
+            FONT_REGULAR,
             8,
         )
 
@@ -168,7 +152,7 @@ def add_footer(canvas, doc):
     if include_page_numbers:
 
         canvas.setFont(
-            "Helvetica",
+            FONT_REGULAR,
             8,
         )
 
@@ -395,7 +379,7 @@ def create_forecast_report(
             ),
 
             Paragraph(
-                insight["Status"],
+                str(insight["Status"]),
                 TABLE_BODY_STYLE,
             ),
         ],
@@ -492,7 +476,7 @@ def create_forecast_report(
 
     story.append(
         Paragraph(
-            insight["Outlook"],
+            str(insight["Outlook"]),
             BODY_STYLE,
         )
     )
@@ -519,15 +503,15 @@ def create_forecast_report(
     ):
 
         clean_recommendation = (
-            recommendation
+            str(recommendation)
             .replace("**", "")
             .replace("`", "")
-            .replace("✅", "")
-            .replace("⚠️", "")
-            .replace("🚨", "")
-            .replace("📈", "")
-            .replace("💰", "")
-            .replace("📦", "")
+            .replace("âœ…", "")
+            .replace("âš ï¸¢", "")
+            .replace("ðŸš¨", "")
+            .replace("ðŸ“ˆ", "")
+            .replace("ðŸ’°", "")
+            .replace("ðŸ“¦", "")
         )
 
         story.append(
@@ -691,4 +675,3 @@ def create_forecast_report(
 
 
     return filename
-

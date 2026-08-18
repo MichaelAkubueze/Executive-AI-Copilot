@@ -14,7 +14,13 @@ from reportlab.platypus import (
     Image,
     HRFlowable,
 )
-
+from reports.report_styles import (
+    FONT_REGULAR,
+    FONT_BOLD,
+)
+# --------------------------------------------------------
+# STYLES
+# --------------------------------------------------------
 # --------------------------------------------------------
 # STYLES
 # --------------------------------------------------------
@@ -24,24 +30,22 @@ styles = getSampleStyleSheet()
 title_style = styles["Heading1"]
 title_style.alignment = TA_CENTER
 title_style.textColor = colors.HexColor("#1E3A8A")
-title_style.fontName = "Helvetica-Bold"
+title_style.fontName = FONT_BOLD
 title_style.fontSize = 24
 title_style.spaceAfter = 10
 
 heading = styles["Heading2"]
 heading.textColor = colors.HexColor("#2563EB")
-heading.fontName = "Helvetica-Bold"
+heading.fontName = FONT_BOLD
 heading.fontSize = 15
 heading.spaceBefore = 8
 heading.spaceAfter = 6
 
 normal = styles["BodyText"]
-normal.fontName = "Helvetica"
+normal.fontName = FONT_REGULAR
 normal.fontSize = 10
 normal.leading = 13
 normal.spaceAfter = 2
-
-
 # --------------------------------------------------------
 # HELPERS
 # --------------------------------------------------------
@@ -158,7 +162,7 @@ def build_pdf(
 
                 ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
 
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTNAME", (0, 0), (-1, 0), FONT_BOLD),
 
                 ("FONTSIZE", (0, 0), (-1, 0), 11),
 

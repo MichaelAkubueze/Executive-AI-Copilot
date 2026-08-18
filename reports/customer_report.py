@@ -1,3 +1,4 @@
+
 from pathlib import Path
 
 from reportlab.platypus import (
@@ -14,6 +15,7 @@ from reports.report_styles import (
     TITLE_STYLE,
     HEADING_STYLE,
     BODY_STYLE,
+    FONT_REGULAR,
 )
 
 from reports.report_utils import (
@@ -67,9 +69,9 @@ def add_footer(canvas, doc):
     # ------------------------------------------------------
 
     canvas.setFont(
-        "Helvetica",
-        8,
-    )
+    FONT_REGULAR,
+    8,
+)
 
     canvas.setFillColor(
         colors.HexColor("#64748B")

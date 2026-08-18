@@ -23,6 +23,8 @@ from reports.report_styles import (
     TITLE_STYLE,
     HEADING_STYLE,
     BODY_STYLE,
+    FONT_REGULAR,
+    FONT_BOLD,
 )
 
 from reports.report_tables import executive_kpi_table
@@ -80,9 +82,9 @@ def add_footer(canvas, doc):
     # ------------------------------------------------------
 
     canvas.setFont(
-        "Helvetica",
-        8,
-    )
+    FONT_REGULAR,
+    8,
+)
 
     canvas.setFillColor(
         colors.HexColor("#64748B")
@@ -231,11 +233,11 @@ def management_action_table(insight):
                 ),
 
                 (
-                    "FONTNAME",
-                    (0, 0),
-                    (-1, 0),
-                    "Helvetica-Bold",
-                ),
+    "FONTNAME",
+    (0, 0),
+    (-1, 0),
+    FONT_BOLD,
+),
 
                 (
                     "FONTSIZE",

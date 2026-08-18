@@ -14,8 +14,10 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
+from reports.report_styles import (
+    FONT_REGULAR,
+    FONT_BOLD,
+)
 
 from reports.report_utils import (
     report_date,
@@ -38,94 +40,6 @@ LOGO_PATH = os.path.join(
     "assets",
     "company_logo.png",
 )
-
-
-# ==========================================================
-# PLATFORM-SAFE FONT CONFIGURATION
-# ==========================================================
-#
-# Windows:
-#     Use Calibri if it exists.
-#
-# Streamlit Cloud / Linux:
-#     Calibri does not exist, therefore ReportLab uses
-#     built-in Helvetica fonts.
-#
-# IMPORTANT:
-#     We NEVER call TTFont() unless the font file exists.
-#
-# This prevents:
-#
-# reportlab.pdfbase.ttfonts.TTFError
-#
-# on Streamlit Cloud.
-# ==========================================================
-
-CALIBRI_PATH = r"C:\Windows\Fonts\calibri.ttf"
-CALIBRI_BOLD_PATH = r"C:\Windows\Fonts\calibrib.ttf"
-
-FONT_REGULAR = "Helvetica"
-FONT_BOLD = "Helvetica-Bold"
-
-
-def configure_fonts():
-
-    global FONT_REGULAR
-    global FONT_BOLD
-
-    registered_fonts = (
-        pdfmetrics.getRegisteredFontNames()
-    )
-
-    # ------------------------------------------------------
-    # Check that BOTH font files actually exist
-    # ------------------------------------------------------
-
-    if not (
-        os.path.isfile(CALIBRI_PATH)
-        and os.path.isfile(CALIBRI_BOLD_PATH)
-    ):
-        return
-
-    # ------------------------------------------------------
-    # Register Calibri
-    # ------------------------------------------------------
-
-    try:
-
-        if "Calibri" not in registered_fonts:
-
-            pdfmetrics.registerFont(
-                TTFont(
-                    "Calibri",
-                    CALIBRI_PATH,
-                )
-            )
-
-        if "Calibri-Bold" not in registered_fonts:
-
-            pdfmetrics.registerFont(
-                TTFont(
-                    "Calibri-Bold",
-                    CALIBRI_BOLD_PATH,
-                )
-            )
-
-        FONT_REGULAR = "Calibri"
-        FONT_BOLD = "Calibri-Bold"
-
-    except Exception:
-
-        # --------------------------------------------------
-        # Absolute fallback
-        # --------------------------------------------------
-
-        FONT_REGULAR = "Helvetica"
-        FONT_BOLD = "Helvetica-Bold"
-
-
-# Configure fonts safely
-configure_fonts()
 
 
 # ==========================================================
@@ -265,6 +179,7 @@ def safe_number(value):
 
     try:
         return float(value)
+
     except (
         TypeError,
         ValueError,
@@ -301,6 +216,7 @@ def clean_recommendation(text):
     ]
 
     for item in remove_items:
+
         text = text.replace(
             item,
             "",
