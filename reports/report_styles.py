@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 from reportlab.lib import colors
@@ -19,7 +18,41 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 # FONT PATHS
 # ==========================================================
 
-# Windows Segoe UI
+# ----------------------------------------------------------
+# Project-bundled Noto Sans
+# ----------------------------------------------------------
+#
+# These fonts are committed inside the repository so PDF
+# generation works consistently on:
+#
+# - Windows
+# - Linux
+# - Streamlit Cloud
+# - Other deployment environments
+#
+# Noto Sans supports Unicode characters including the
+# Nigerian Naira symbol: ₦
+#
+
+PROJECT_REGULAR = (
+    PROJECT_ROOT
+    / "assets"
+    / "fonts"
+    / "NotoSans-Regular.ttf"
+)
+
+PROJECT_BOLD = (
+    PROJECT_ROOT
+    / "assets"
+    / "fonts"
+    / "NotoSans-Bold.ttf"
+)
+
+
+# ----------------------------------------------------------
+# Windows Segoe UI fallback
+# ----------------------------------------------------------
+
 WINDOWS_REGULAR = Path(
     r"C:\Windows\Fonts\segoeui.ttf"
 )
@@ -29,41 +62,11 @@ WINDOWS_BOLD = Path(
 )
 
 
-# Optional project fonts
-#
-# These allow Streamlit Cloud / Linux to use a font
-# committed inside the project repository.
-#
-# Recommended structure:
-#
-# 03_Python_SQL_Analytics/
-#       assets/
-#           fonts/
-#               segoeui.ttf
-#               segoeuib.ttf
-#
-
-PROJECT_REGULAR = (
-    PROJECT_ROOT
-    / "assets"
-    / "fonts"
-    / "segoeui.ttf"
-)
-
-PROJECT_BOLD = (
-    PROJECT_ROOT
-    / "assets"
-    / "fonts"
-    / "segoeuib.ttf"
-)
-
-
 # ==========================================================
 # DEFAULT REPORTLAB FONTS
 # ==========================================================
 #
 # Helvetica is always available in ReportLab.
-#
 # It is used only as the final fallback.
 #
 
@@ -91,10 +94,9 @@ def register_font(
         if not font_path.exists():
             return False
 
-        if (
-            font_name
-            not in pdfmetrics.getRegisteredFontNames()
-        ):
+        registered_fonts = pdfmetrics.getRegisteredFontNames()
+
+        if font_name not in registered_fonts:
 
             pdfmetrics.registerFont(
                 TTFont(
@@ -116,12 +118,13 @@ def register_font(
 #
 # Priority:
 #
-# 1. Windows Segoe UI
-# 2. Project-bundled Segoe UI
-# 3. Helvetica fallback
+# 1. Project-bundled Noto Sans
+# 2. Windows Segoe UI
+# 3. Helvetica
 #
-# Segoe UI contains the Naira symbol (₦), which is
-# important for financial PDF reports.
+# Noto Sans is the preferred font because it is stored
+# inside the project repository and therefore available
+# to Streamlit Cloud / Linux.
 # ==========================================================
 
 regular_registered = False
@@ -129,13 +132,34 @@ bold_registered = False
 
 
 # ----------------------------------------------------------
-# WINDOWS
+# 1. PROJECT-BUNDLED NOTO SANS
 # ----------------------------------------------------------
 
+regular_registered = register_font(
+    "NotoSans",
+    PROJECT_REGULAR,
+)
+
+bold_registered = register_font(
+    "NotoSans-Bold",
+    PROJECT_BOLD,
+)
+
+
 if (
-    WINDOWS_REGULAR.exists()
-    and WINDOWS_BOLD.exists()
+    regular_registered
+    and bold_registered
 ):
+
+    FONT_REGULAR = "NotoSans"
+    FONT_BOLD = "NotoSans-Bold"
+
+
+# ----------------------------------------------------------
+# 2. WINDOWS SEGoe UI FALLBACK
+# ----------------------------------------------------------
+
+else:
 
     regular_registered = register_font(
         "SegoeUI",
@@ -147,38 +171,13 @@ if (
         WINDOWS_BOLD,
     )
 
+    if (
+        regular_registered
+        and bold_registered
+    ):
 
-# ----------------------------------------------------------
-# PROJECT-BUNDLED FONT
-# ----------------------------------------------------------
-
-if not (
-    regular_registered
-    and bold_registered
-):
-
-    regular_registered = register_font(
-        "SegoeUI",
-        PROJECT_REGULAR,
-    )
-
-    bold_registered = register_font(
-        "SegoeUI-Bold",
-        PROJECT_BOLD,
-    )
-
-
-# ----------------------------------------------------------
-# FINAL FONT SELECTION
-# ----------------------------------------------------------
-
-if (
-    regular_registered
-    and bold_registered
-):
-
-    FONT_REGULAR = "SegoeUI"
-    FONT_BOLD = "SegoeUI-Bold"
+        FONT_REGULAR = "SegoeUI"
+        FONT_BOLD = "SegoeUI-Bold"
 
 
 # ==========================================================
@@ -243,7 +242,7 @@ TABLE_BODY_STYLE = ParagraphStyle(
 
 
 # ==========================================================
-# OPTIONAL FINANCIAL STYLE
+# FINANCIAL STYLES
 # ==========================================================
 
 MONEY_STYLE = ParagraphStyle(
@@ -271,18 +270,38 @@ MONEY_BOLD_STYLE = ParagraphStyle(
 def get_report_font_status():
     """
     Returns information about the active PDF fonts.
-    Useful for debugging Streamlit Cloud deployments.
+
+    Useful for debugging local and Streamlit Cloud
+    deployments.
     """
+
+    registered_fonts = pdfmetrics.getRegisteredFontNames()
 
     return {
         "regular_font": FONT_REGULAR,
         "bold_font": FONT_BOLD,
         "regular_registered": (
             FONT_REGULAR
-            in pdfmetrics.getRegisteredFontNames()
+            in registered_fonts
         ),
         "bold_registered": (
             FONT_BOLD
-            in pdfmetrics.getRegisteredFontNames()
+            in registered_fonts
+        ),
+        "noto_regular_exists": (
+            PROJECT_REGULAR.exists()
+        ),
+        "noto_bold_exists": (
+            PROJECT_BOLD.exists()
+        ),
+        "noto_regular_size": (
+            PROJECT_REGULAR.stat().st_size
+            if PROJECT_REGULAR.exists()
+            else 0
+        ),
+        "noto_bold_size": (
+            PROJECT_BOLD.stat().st_size
+            if PROJECT_BOLD.exists()
+            else 0
         ),
     }
